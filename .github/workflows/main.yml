@@ -12,8 +12,19 @@ jobs:
         # Using a YAML multiline string as a workaround for a list argument.
         # @see https://github.community/t5/GitHub-Actions/Can-action-inputs-be-arrays/td-p/33776
         silos: |
-          DEV
-          Medium
-          Mars
+          dev
+          medium
+          mars
+      env:
+        # Set necessary API keys as secrets of your repo and specify them here in this format:
+        #
+        #   <silo name>_API_KEY
+        #
+        # e.g.
+        #
+        #   medium_API_KEY
+        #
+        # so that the action can find them easily when needed.
+        dev_API_KEY: ${{ secrets.dev_API_KEY }}
     - name: Get the output time
       run: echo "The time was ${{ steps.syndicate.outputs.time }}"
