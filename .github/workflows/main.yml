@@ -1,14 +1,17 @@
 on: [push]
 
 jobs:
-  hello_world_job:
+  syndicate:
     runs-on: ubuntu-latest
-    name: A job to say hello
+    name: Example syndicate workflow
     steps:
-    - name: Hello world action step
-      id: hello
+    - name: Syndicate published content changes
+      id: syndicate
       uses: dabrady/syndicate@master
       with:
-        who-to-greet: 'Dan the Dev'
+        silos:
+          - DEV
+          - Medium
+          - Mars
     - name: Get the output time
-      run: echo "The time was ${{ steps.hello.outputs.time }}"
+      run: echo "The time was ${{ steps.syndicate.outputs.time }}"
