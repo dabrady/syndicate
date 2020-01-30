@@ -4,9 +4,11 @@ import sys
 import os
 from datetime import datetime
 
-print(f"You want to publish to these places? {sys.argv[1:]}")
+silos = sys.argv[1:]
+print(f"You want to publish to these places? {silos}")
 
-print("We have access to these environment variables:")
-print(os.environ)
+print(f"Do we have the necessary API keys?")
+available_keys = {silo:(f"{silo}_API_KEY" in os.environ) for silo in silos }
+print(available_keys)
 
 print(f"::set-output name=time::{datetime.now()}")
