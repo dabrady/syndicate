@@ -5,13 +5,15 @@ jobs:
     runs-on: ubuntu-latest
     name: Example syndicate workflow
     steps:
-    - name: Syndicate published content changes
+    - name: Syndicate to silos
       id: syndicate
       uses: dabrady/syndicate@master
       with:
-        silos:
-          - DEV
-          - Medium
-          - Mars
+        # Using a YAML multiline string as a workaround for a list argument.
+        # @see https://github.community/t5/GitHub-Actions/Can-action-inputs-be-arrays/td-p/33776
+        silos: |
+          DEV
+          Medium
+          Mars
     - name: Get the output time
       run: echo "The time was ${{ steps.syndicate.outputs.time }}"

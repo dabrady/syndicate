@@ -4,7 +4,7 @@ inputs:
   silos: # id of input
     description: 'A list of names indicating the platforms to publish your content to.'
     required: true
-    default: []
+    default: ''
 outputs:
   time: # id of output
     description: 'The time this action finished'
