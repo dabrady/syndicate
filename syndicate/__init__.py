@@ -1,15 +1,12 @@
 from datetime import datetime
 from syndicate.utils import action_log, action_warn, action_output, get_posts
 
-import github3
 import sys
 import os
 import importlib.util
 
 def elsewhere(silos):
-    commit = _get_commit_payload()
-    assert commit, "could not fetch commit payload"
-    posts = get_posts(commit)
+    posts = get_posts()
     assert posts, "no posts to update"
 
     action_log(f"You want to publish to these places: {silos}")
@@ -51,13 +48,3 @@ def _has_api_key(silo):
 
 def _get_api_key(silo):
     return os.getenv(_API_KEY(silo))
-
-def _get_commit_payload():
-    assert os.getenv("GITHUB_REPOSITORY"), "GITHUB_REPOSITORY not available"
-    assert os.getenv("GITHUB_TOKEN"), "GITHUB_TOKEN not available"
-    assert os.getenv("GITHUB_SHA"), "GITHUB_SHA not available"
-
-    gh = github3.login(token=os.getenv("GITHUB_TOKEN"))
-    repo = gh.repository(*os.getenv("GITHUB_REPOSITORY").split('/'))
-    commit = repo.commit(os.getenv("GITHUB_SHA"))
-    return commit
