@@ -12,7 +12,6 @@ jobs:
         # Using a YAML multiline string as a workaround for a list argument.
         # @see https://github.community/t5/GitHub-Actions/Can-action-inputs-be-arrays/td-p/33776
         silos: |
-          dev
           medium
           mars
       env:
