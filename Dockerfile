@@ -1,4 +1,5 @@
-FROM python:3-alpine
+# Would like to use python:3-alpine, but it doesn't have 'gcc' and the github3 library needs that.
+FROM python:3
 
 WORKDIR /action
 

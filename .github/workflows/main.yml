@@ -16,6 +16,7 @@ jobs:
           medium
           mars
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Set necessary API keys as secrets of your repo and specify them here in this format:
         #
         #   <silo name>_API_KEY

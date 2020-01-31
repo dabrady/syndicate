@@ -2,8 +2,10 @@ from syndicate.utils import action_log_group, action_log
 import requests
 
 @action_log_group("dev")
-def do_the_thing(api_key):
+def do_the_thing(posts, api_key):
     action_log("Hello? Yes, this is DEV.")
+    action_log("You want to syndicate these posts:")
+    action_log(posts)
 
     return True
 

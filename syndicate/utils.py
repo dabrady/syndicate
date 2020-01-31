@@ -23,3 +23,14 @@ def action_log_group(title):
             return result
         return _wrapper
     return _decorator
+
+def get_posts(commit=None, post_dir='pages/posts'):
+    assert commit, 'missing commit payload'
+    return {
+        file['filename']:file['status']
+        for file in commit.files
+        if (
+            file['filename'].startswith(post_dir) and
+            file['status'] in ('created', 'modified')
+        )
+    }
