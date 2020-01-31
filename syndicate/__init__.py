@@ -1,28 +1,31 @@
+from datetime import datetime
+from syndicate.utils import action_log, action_warn, action_output
+
 import sys
 import os
-from datetime import datetime
 import importlib.util
 
-def elsewhere(silos):
-    print(f"You want to publish to these places: {silos}")
 
-    print("Do I know how?")
+def elsewhere(silos):
+    action_log(f"You want to publish to these places: {silos}")
+
+    action_log("Do I know how?")
     specs = {silo:_locate(silo) for silo in silos}
     recognized_silos = {silo:bool(spec) for (silo,spec) in specs.items()}
-    print(recognized_silos)
+    action_log(recognized_silos)
 
-    print(f"Do we have the necessary API keys?")
+    action_log(f"Do we have the necessary API keys?")
     available_keys = {silo:bool(_get_api_key(silo)) for (silo, known) in recognized_silos.items() if known }
-    print(available_keys)
+    action_log(available_keys)
 
     if any(available_keys.values()):
-        print("Let's do this thing.")
+        action_log("Let's do this thing.")
         results = {silo:_load(spec, _get_api_key(silo)) for (silo,spec) in specs.items() if _has_api_key(silo)}
-        print(results)
+        action_log(results)
     else:
-        print("Sorry, can't do anything with that.")
+        action_warn("Sorry, can't do anything with that.")
 
-    print(f"::set-output name=time::{datetime.now()}")
+    action_output("time", datetime.now())
 
 ### privates ###
 _API_KEY = lambda s: f"{s}_API_KEY"
