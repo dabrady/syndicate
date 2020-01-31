@@ -6,6 +6,7 @@ inputs:
     required: true
     default: ''
 outputs:
+  # TODO Change this to a map of publish times keyed by silo
   time: # id of output
     description: 'The time this action finished'
 runs:
