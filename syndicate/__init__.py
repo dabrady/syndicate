@@ -5,25 +5,24 @@ import sys
 import os
 import importlib.util
 
-
 def elsewhere(silos):
     action_log(f"You want to publish to these places: {silos}")
 
-    action_log("Do I know how?")
     specs = {silo:_locate(silo) for silo in silos}
-    recognized_silos = {silo:bool(spec) for (silo,spec) in specs.items()}
-    action_log(recognized_silos)
+    recognized_silos = {silo:spec for (silo,spec) in specs.items() if spec}
+    action_log(f"I know how to publish to these places: {list(recognized_silos.keys())}")
 
-    action_log(f"Do we have the necessary API keys?")
-    available_keys = {silo:bool(_get_api_key(silo)) for (silo, known) in recognized_silos.items() if known }
-    action_log(available_keys)
+    available_keys = {silo:bool(_get_api_key(silo)) for silo in recognized_silos.keys()}
+
+    if not all(available_keys.values()):
+        action_log(f"But I don't have API keys for these places: {[silo for (silo, available) in available_keys.items() if not available]}")
 
     if any(available_keys.values()):
-        action_log("Let's do this thing.")
+        action_log("I'll do what I can.")
         results = {silo:_load(spec, _get_api_key(silo)) for (silo,spec) in specs.items() if _has_api_key(silo)}
         action_log(results)
     else:
-        action_warn("Sorry, can't do anything with that.")
+        action_warn("Sorry, can't help you.")
 
     action_output("time", datetime.now())
 
