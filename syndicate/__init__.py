@@ -7,7 +7,7 @@ def elsewhere(silos):
     print(f"You want to publish to these places: {silos}")
 
     print("Do I know how?")
-    recognized_silos = {silo:bool(importlib.util.find_spec(f"syndicate.silos.{silo}")) for silo in silos}
+    recognized_silos = {silo:bool(_locate(silo)) for silo in silos}
     print(recognized_silos)
 
     print(f"Do we have the necessary API keys?")
@@ -15,3 +15,7 @@ def elsewhere(silos):
     print(available_keys)
 
     print(f"::set-output name=time::{datetime.now()}")
+
+### privates ###
+def _locate(silo):
+    return importlib.util.find_spec(f'syndicate.silos.{silo}')
