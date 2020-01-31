@@ -18,7 +18,8 @@ def action_log_group(title):
     def _decorator(func):
         def _wrapper(*args, **kwargs):
             print(f"::group::{title}")
-            func(*args, **kwargs)
+            result = func(*args, **kwargs)
             print("::endgroup::")
+            return result
         return _wrapper
     return _decorator
