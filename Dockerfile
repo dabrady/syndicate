@@ -5,8 +5,8 @@ WORKDIR /action
 # Copy action metadata
 COPY LICENSE README.md requirements.txt ./
 # Copy action code
-COPY entrypoint.sh ./
-COPY src/ ./src/
+COPY entrypoint.py ./
+COPY syndicate/ ./syndicate/
 
 # Install action requirements
 RUN pip install --no-cache-dir -r ./requirements.txt
@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r ./requirements.txt
 # Hardcoding WORKDIR into ENTRYPOINT.
 # Can't use environment variables in "exec" form of ENTRYPOINT, but "exec" form
 # is recommended.
-ENTRYPOINT [ "/action/entrypoint.sh" ]
+ENTRYPOINT [ "/action/entrypoint.py" ]
