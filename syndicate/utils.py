@@ -31,6 +31,6 @@ def get_posts(commit=None, post_dir='pages/posts'):
         for file in commit.files
         if (
             file['filename'].startswith(post_dir) and
-            file['status'] in ('created', 'modified')
+            file['status'] in ('added', 'modified')
         )
     }
