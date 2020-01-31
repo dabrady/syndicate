@@ -26,11 +26,8 @@ def action_log_group(title):
 
 def get_posts(commit=None, post_dir='pages/posts'):
     assert commit, 'missing commit payload'
+    posts = [file for file in commit.files if file['filename'].startswith(post_dir)]
     return {
-        file['filename']:file['status']
-        for file in commit.files
-        if (
-            file['filename'].startswith(post_dir) and
-            file['status'] in ('added', 'modified')
-        )
+        'added': [post['filename'] for post in posts if post['status'] == 'added'],
+        'modified': [post['filename'] for post in posts if post['status'] == 'modified']
     }

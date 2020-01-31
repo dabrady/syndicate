@@ -7,6 +7,11 @@ import os
 import importlib.util
 
 def elsewhere(silos):
+    commit = _get_commit_payload()
+    assert commit, "could not fetch commit payload"
+    posts = get_posts(commit)
+    assert posts, "no posts to update"
+
     action_log(f"You want to publish to these places: {silos}")
 
     specs = {silo:_locate(silo) for silo in silos}
@@ -21,11 +26,8 @@ def elsewhere(silos):
     if any(available_keys.values()):
         action_log("I'll do what I can.")
 
-        commit = _get_commit_payload()
-        assert commit, "could not fetch commit payload"
-        posts = get_posts(commit)
-
         results = {silo:_syndicate(spec, _get_api_key(silo), posts) for (silo,spec) in specs.items() if _has_api_key(silo)}
+
         action_log(results)
     else:
         action_warn("Sorry, can't help you.")
