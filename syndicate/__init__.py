@@ -39,7 +39,7 @@ def _locate(silo):
 
 def _syndicate(silo_spec, api_key, posts):
     if silo_spec and api_key:
-        return importlib.import_module(silo_spec.name).do_the_thing(posts, api_key)
+        return importlib.import_module(silo_spec.name).syndicate(posts, api_key)
     else:
         return None
 

@@ -3,7 +3,7 @@ import frontmatter
 import requests
 
 @action_log_group("dev")
-def do_the_thing(posts, api_key):
+def syndicate(posts, api_key):
     action_log("Hello? Yes, this is DEV.")
     action_log("You want to syndicate these posts:")
     action_log(posts)
