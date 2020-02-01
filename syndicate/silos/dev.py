@@ -1,4 +1,5 @@
-from syndicate.utils import action_log_group, action_log
+from syndicate.utils import action_log_group, action_log, get_canonical_url
+import frontmatter as frontmatter
 import requests
 
 @action_log_group("dev")
@@ -43,8 +44,28 @@ def _fetch(api_key=None, post_id=None):
         response.raise_for_status() # raise error if bad request
         return response.json()
 
-def _draft():
-    pass
+def _draft(post, api_key=None):
+    assert api_key, "missing API key"
+    assert post, "missing post"
+
+    raw_contents = post.decoded.decode('utf-8')
+    front, _ = frontmatter.parse(raw_contents)
+    assert front.get('title'), "can't draft an article without a title"
+
+    payload = {
+        'article': {
+            'title': front['title'],
+            'published': False,
+            'tags': front.get('tags', []),
+            'series': front.get('series', None),
+            'canonical_url': get_canonical_url(post.path),
+            'body_markdown': raw_contents
+        }
+    }
+
+    action_log("Drafting a post with this payload:")
+    action_log(payload)
+    # endpoint = "https://dev.to/api/articles"
 
 def _publish():
     pass

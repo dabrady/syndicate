@@ -1,4 +1,4 @@
 ---
 title: 'dummy post'
-tags: anonymous, random
+tags: anonymous
 ---
