@@ -86,7 +86,7 @@ def _payload_for(post):
         'article': {
             'title': front['title'],
             'published': False,
-            'tags': yaml_sequence(front.get('tags', None)),
+            'tags': yaml_sequence(front.get('tags', [])),
             'series': front.get('series', None),
             'canonical_url': get_canonical_url(post),
             'body_markdown': body
