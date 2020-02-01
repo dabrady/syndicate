@@ -5,6 +5,10 @@ inputs:
     description: 'A list of names indicating the platforms to publish your content to.'
     required: true
     default: ''
+  commit:
+    description: 'Set this to true to update the frontmatter of your posts with their syndicate IDs'
+    required: false
+    default: false
 outputs:
   # TODO Change this to a map of publish times keyed by silo
   time: # id of output
