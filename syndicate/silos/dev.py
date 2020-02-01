@@ -5,30 +5,11 @@ import requests
 @action_log_group("dev")
 def syndicate(posts, api_key):
     action_log("Hello? Yes, this is DEV.")
-    action_log("You want to syndicate these posts:")
-    action_log(posts)
 
-    results = {
-        'added': [],
-        'modified': []
+    return {
+        'added': [id for id in (_draft(post, api_key) for post in posts if not _id_for(post)) if id],
+        'modified': [id for id in (_update(post, api_key) for post in posts if _id_for(post)) if id]
     }
-    for post in posts['added']:
-        post_id = _draft(post, api_key)
-        if post_id:
-            action_log("Drafted successfully!")
-            results['added'].append(post_id)
-        else:
-            action_warn(f"Draft failure for '{post.name}'")
-
-    for post in posts['modified']:
-        post_id = _update(post, api_key)
-        if post_id:
-            action_log("Updated successfully!")
-            results['modified'].append(post_id)
-        else:
-            action_warn(f"Update failure for '{post.name}'")
-
-    return results
 
 ### privates ###
 
@@ -69,22 +50,17 @@ def _draft(post, api_key=None):
 
     payload = _payload_for(post)
 
-    action_log("Drafting a post with this payload:")
-    action_log(payload)
     endpoint = "https://dev.to/api/articles"
     headers = {'api-key': api_key}
     response = requests.post(endpoint, headers=headers, json=payload)
 
     if response.status_code != requests.codes.created:
-        action_error("Failed to create draft!")
+        action_error(f"Failed to create draft for '{post.name}'")
         action_error(response.json())
         return None
     else:
         results = response.json()
         return results['id']
-
-def _publish():
-    pass
 
 def _update(post, api_key=None):
     assert api_key, "missing API key"
@@ -95,7 +71,7 @@ def _update(post, api_key=None):
     payload = {'article': { 'body_markdown': post.decoded.decode('utf-8') } }
     response = requests.put(endpoint, headers=headers, json=payload)
     if response.status_code != requests.codes.ok:
-        action_error("Failed to update post!")
+        action_error(f"Failed to update post '{post.name}'")
         action_error(response.json())
         return None
     else:
@@ -104,29 +80,27 @@ def _update(post, api_key=None):
 
 def _id_for(post):
     assert post, "missing post"
-    return _front_of(post).get('dev_id')
+    return _fronted(post).get('dev_id')
 
-def _front_of(post):
+def _fronted(post):
     assert post, "missing post"
     raw_contents = post.decoded.decode('utf-8')
-    front, _ = frontmatter.parse(raw_contents)
-    return front
+    return frontmatter.loads(raw_contents)
 
 def _payload_for(post):
-    raw_contents = post.decoded.decode('utf-8')
-    assert frontmatter.checks(raw_contents), "post is missing frontmatter"
+    assert post, "missing post"
 
-    front, body = frontmatter.parse(raw_contents)
-    assert front.get('title'), "article is missing a title"
+    fronted_post = _fronted(post)
+    assert fronted_post.get('title'), "article is missing a title"
 
-    # TODO test if can be accomplished by just sending raw_contents as body
+    # TODO test if can be accomplished by just sending raw contents as body_markdown
     return {
         'article': {
-            'title': front['title'],
+            'title': fronted_post['title'],
             'published': False,
-            'tags': yaml_sequence(front.get('tags', [])),
-            'series': front.get('series', None),
+            'tags': yaml_sequence(fronted_post.get('tags', [])),
+            'series': fronted_post.get('series', None),
             'canonical_url': get_canonical_url(post),
-            'body_markdown': body
+            'body_markdown': fronted_post.content
         }
     }
