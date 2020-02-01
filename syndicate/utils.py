@@ -1,3 +1,4 @@
+import frontmatter
 import functools
 import github3
 import os
@@ -82,8 +83,5 @@ def commit_silo_id(post, post_id, silo=None):
     fronted_post[f'{silo}-id'] = post_id
 
     action_log(f"Updating frontmatter with ID for {silo}")
-    pushed_change = post.update(
-        f'syndicate({silo}): adding post ID to frontmatter',
-        frontmatter.dumps(fronted_post)
-    )
+    pushed_change = post.update(f'syndicate({silo}): adding post id to frontmatter', frontmatter.dumps(fronted_post).encode('utf-8'))
     action_log(pushed_change)

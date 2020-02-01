@@ -1,5 +1,5 @@
-from syndicate.utils import action_log_group, action_log, action_error, get_canonical_url, yaml_sequence, commit_silo_id
-import frontmatter as frontmatter
+from syndicate.utils import action_log_group, action_log, action_warn, action_error, get_canonical_url, yaml_sequence, commit_silo_id
+import frontmatter
 import requests
 
 @action_log_group("dev")
@@ -8,12 +8,17 @@ def do_the_thing(posts, api_key):
     action_log("You want to syndicate these posts:")
     action_log(posts)
 
+    success = True
     for post in posts['added']:
         results = _draft(post, api_key)
-        action_log("Draft success!")
-        action_log(results)
+        if results:
+            action_log("Draft success!")
+            action_log(results)
+        else:
+            action_warn("Draft failure D:")
+            success = False
 
-    return True
+    return success
 
 ### privates ###
 
