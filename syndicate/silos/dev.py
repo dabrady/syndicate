@@ -81,11 +81,9 @@ def _draft(post, api_key=None):
         return None
     else:
         results = response.json()
-        post_id = results['id']
-        assert post_id
         ## TODO Move this up to `elsewhere`
         commit_silo_id(post, post_id, silo='dev')
-        return post_id
+        return results['id']
 
 def _publish():
     pass
@@ -104,20 +102,15 @@ def _update(post, api_key=None):
         return None
     else:
         results = response.json()
-        post_id = results['id']
-        assert post_id
-        return post_id
+        return results['id']
 
 def _id_for(post):
     assert post, "missing post"
-    id = _front_of(post).get('dev_id')
-    assert id, "missing post id for DEV"
-    return id
+    return _front_of(post).get('dev_id')
 
 def _front_of(post):
     assert post, "missing post"
     raw_contents = post.decoded.decode('utf-8')
-    assert frontmatter.checks(raw_contents), "post is missing frontmatter"
     front, _ = frontmatter.parse(raw_contents)
     return front
 
