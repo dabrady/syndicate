@@ -18,6 +18,15 @@ def syndicate(posts, api_key):
             action_warn("Draft failure D:")
             success = False
 
+    for post in posts['modified']:
+        results = _update(post, api_key)
+        if results:
+            action_log("Update success!")
+            action_log(results)
+        else:
+            action_warn("Update failure D:")
+            success = False
+
     return success
 
 ### privates ###
@@ -27,9 +36,7 @@ def syndicate(posts, api_key):
 def _fetch(post_id=None, api_key=None):
     assert api_key, "missing API key"
 
-    headers = {
-        'api-key': api_key
-    }
+    headers = {'api-key': api_key}
     if post_id:
         # Fetch data for given post ID
         ## NOTE Currently, there's no way to fetch data for a specific post.
@@ -63,34 +70,56 @@ def _draft(post, api_key=None):
     action_log("Drafting a post with this payload:")
     action_log(payload)
     endpoint = "https://dev.to/api/articles"
-    headers = {
-        'api-key': api_key
-    }
+    headers = {'api-key': api_key}
     response = requests.post(endpoint, headers=headers, json=payload)
 
     if response.status_code != requests.codes.created:
         action_error("Failed to create draft!")
         action_error(response.json())
         return None
-
-    results = response.json()
-    assert results['id']
-    commit_silo_id(post, results['id'], silo='dev')
-    return results
+    else:
+        results = response.json()
+        assert results['id']
+        commit_silo_id(post, results['id'], silo='dev')
+        return results
 
 def _publish():
     pass
 
-def _update():
-    pass
+def _update(post, api_key=None):
+    assert api_key, "missing API key"
+    assert post, "missing post"
+
+    endpoint = f'https://dev.to/api/articles/{_id_for(post)}'
+    headers = {'api-key': api_key}
+    payload = {'article': { 'body_markdown': post.decoded.decode('utf-8') } }
+    response = requests.put(endpoint, headers=headers, json=payload)
+    if response.status_code != requests.codes.ok:
+        action_error("Failed to update post!")
+        action_error(response.json())
+        return None
+    else:
+        return response.json()
+
+def _id_for(post):
+    assert post, "missing post"
+    return _front_of(post)['dev_id']
+
+def _front_of(post):
+    assert post, "missing post"
+    raw_contents = post.decoded.decode('utf-8')
+    assert frontmatter.checks(raw_contents), "post is missing frontmatter"
+    front, _ = frontmatter.parse(raw_contents)
+    return front
 
 def _payload_for(post):
     raw_contents = post.decoded.decode('utf-8')
-    assert frontmatter.checks(raw_contents), "article is missing frontmatter"
+    assert frontmatter.checks(raw_contents), "post is missing frontmatter"
 
     front, body = frontmatter.parse(raw_contents)
     assert front.get('title'), "article is missing a title"
 
+    # TODO test if can be accomplished by just sending raw_contents as body
     return {
         'article': {
             'title': front['title'],
