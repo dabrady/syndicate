@@ -9,7 +9,7 @@ ACTION_SOURCE='/action'
 sys.path.insert(0, os.path.abspath(ACTION_SOURCE))
 
 import syndicate
-from syndicate.utils import action_setenv
+from syndicate.utils import action_output, action_setenv
 
 action_inputs = {
     'silos': os.getenv('INPUT_SILOS').splitlines()
@@ -17,6 +17,7 @@ action_inputs = {
 
 # Syndicate
 results = syndicate.elsewhere(action_inputs['silos'])
+action_output('syndicated_posts', results)
 if results:
     # Compile results for future steps.
     previous_results = os.getenv('SYNDICATED_POSTS')

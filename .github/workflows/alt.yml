@@ -29,6 +29,9 @@ jobs:
       env:
         DEV_API_KEY: ${{ secrets.DEV_API_KEY }}
 
+    - name: Report DEV.to results
+      run: 'echo "${{ toJSON(steps.DEV.outputs) }}"'
+
     - name: Push to Medium
       uses: dabrady/syndicate@develop
       id: Medium
