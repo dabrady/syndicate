@@ -40,3 +40,8 @@ jobs:
       uses: dabrady/syndicate@develop
       with:
         silos: Planet_Mars
+
+    - name: Report results
+      id: report
+      run:
+        'echo The results are in! "\n$SYNDICATED_POSTS"'

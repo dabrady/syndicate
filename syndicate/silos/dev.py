@@ -8,31 +8,33 @@ def syndicate(posts, api_key):
     action_log("You want to syndicate these posts:")
     action_log(posts)
 
-    success = True
+    results = {
+        'added': [],
+        'modified': []
+    }
     for post in posts['added']:
-        results = _draft(post, api_key)
+        post_id = _draft(post, api_key)
         if results:
             action_log("Draft success!")
-            action_log(results)
+            res['added'].append(post_id)
         else:
-            action_warn("Draft failure D:")
-            success = False
+            action_warn(f"Draft failure for '{post.name}'")
 
     for post in posts['modified']:
-        results = _update(post, api_key)
+        post_id = _update(post, api_key)
         if results:
             action_log("Update success!")
-            action_log(results)
+            res['modified'].append(post_id)
         else:
-            action_warn("Update failure D:")
-            success = False
+            action_warn(f"Update failure for '{post.name}'")
 
-    return success
+    return results
 
 ### privates ###
 
 ## This is a simple semantic wrapper around the DEV API, currently in beta.
 
+# NOTE Not currently used
 def _fetch(post_id=None, api_key=None):
     assert api_key, "missing API key"
 
@@ -79,9 +81,10 @@ def _draft(post, api_key=None):
         return None
     else:
         results = response.json()
-        assert results['id']
-        commit_silo_id(post, results['id'], silo='dev')
-        return results
+        post_id = results['id']
+        assert post_id
+        commit_silo_id(post, post_id, silo='dev')
+        return post_id
 
 def _publish():
     pass
@@ -99,7 +102,10 @@ def _update(post, api_key=None):
         action_error(response.json())
         return None
     else:
-        return response.json()
+        results = response.json()
+        post_id = results['id']
+        assert post_id
+        return post_id
 
 def _id_for(post):
     assert post, "missing post"

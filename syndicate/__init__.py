@@ -27,12 +27,11 @@ def elsewhere(silos):
         action_log("I'll do what I can.")
 
         results = {silo:_syndicate(spec, _get_api_key(silo), posts) for (silo,spec) in specs.items() if _has_api_key(silo)}
-
-        action_log(results)
+        action_output("time", datetime.now())
+        return results
     else:
         action_warn("Sorry, can't help you.")
-
-    action_output("time", datetime.now())
+        action_output("time", datetime.now())
 
 ### privates ###
 _API_KEY = lambda s: f"{s.upper()}_API_KEY"

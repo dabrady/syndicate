@@ -29,6 +29,9 @@ def action_log_group(title):
         return _wrapper
     return _decorator
 
+def action_setenv(key, value):
+    print(f"::set-env name={key}::{value}")
+
 # Memoize authentication
 @functools.lru_cache(maxsize=1)
 def repo():
