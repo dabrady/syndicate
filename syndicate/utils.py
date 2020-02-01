@@ -72,3 +72,18 @@ def yaml_sequence(sequence):
     }
     # If I know how to handle it, handle it; otherwise, just give it back
     return cases.get(type(sequence), JUST_GIVE_IT_BACK)(sequence)
+
+def commit_silo_id(post, post_id, silo=None):
+    assert post, "missing post info"
+    assert post_id, "missing post ID"
+    assert silo, "silo not specified"
+
+    fronted_post = frontmatter.loads(post.decoded.decode('utf-8'))
+    fronted_post[f'{silo}-id'] = post_id
+
+    action_log(f"Updating frontmatter with ID for {silo}")
+    pushed_change = post.update(
+        f'syndicate({silo}): adding post ID to frontmatter',
+        frontmatter.dumps(fronted_post)
+    )
+    action_log(pushed_change)

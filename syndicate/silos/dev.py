@@ -1,4 +1,4 @@
-from syndicate.utils import action_log_group, action_log, get_canonical_url, yaml_sequence
+from syndicate.utils import action_log_group, action_log, get_canonical_url, yaml_sequence, commit_silo_id
 import frontmatter as frontmatter
 import requests
 
@@ -63,7 +63,11 @@ def _draft(post, api_key=None):
     }
     response = requests.post(endpoint, headers=headers, json=payload)
     response.raise_for_status()
-    return response.json()
+
+    results = response.json()
+    assert results['id']
+    commit_silo_id(post, results['id'], silo='dev')
+    return results
 
 def _publish():
     pass
