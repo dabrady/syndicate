@@ -81,8 +81,6 @@ def _draft(post, api_key=None):
         return None
     else:
         results = response.json()
-        ## TODO Move this up to `elsewhere`
-        commit_silo_id(post, post_id, silo='dev')
         return results['id']
 
 def _publish():
