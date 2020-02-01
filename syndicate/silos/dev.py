@@ -55,8 +55,7 @@ def _draft(post, api_key=None):
     response = requests.post(endpoint, headers=headers, json=payload)
 
     if response.status_code != requests.codes.created:
-        action_error(f"Failed to create draft for '{post.name}'")
-        action_error(response.json())
+        action_error(f"Failed to create draft for '{post.name}': {response.json()}")
         return None
     else:
         results = response.json()
@@ -71,8 +70,7 @@ def _update(post, api_key=None):
     payload = {'article': { 'body_markdown': post.decoded.decode('utf-8') } }
     response = requests.put(endpoint, headers=headers, json=payload)
     if response.status_code != requests.codes.ok:
-        action_error(f"Failed to update post '{post.name}'")
-        action_error(response.json())
+        action_error(f"Failed to update post '{post.name}': {response.json()}")
         return None
     else:
         results = response.json()
