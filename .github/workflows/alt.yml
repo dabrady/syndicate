@@ -26,7 +26,7 @@ jobs:
       uses: dabrady/syndicate@develop
       with:
         silos: DEV
-        commit: true
+        commit_on_create: true
       env:
         DEV_API_KEY: ${{ secrets.DEV_API_KEY }}
 
@@ -50,7 +50,7 @@ jobs:
       run:
         'echo The results are in! "${{ toJSON(env.SYNDICATED_POSTS) }}"'
 
-    # - name: Update posts with syndicate IDs
-    #   uses: dabrady/syndicate@develop
-    #   with:
-    #     commit: true
+    - name: Update posts with syndicate IDs
+      uses: dabrady/syndicate@develop
+      with:
+        commit_on_create: true

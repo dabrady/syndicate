@@ -16,11 +16,10 @@ def elsewhere(silos):
 
     specs = {silo:_locate(silo) for silo in silos}
     recognized_silos = {silo:spec for (silo,spec) in specs.items() if spec}
-    action_log(f"I know how to publish to these places: {list(recognized_silos.keys())}")
-
     available_keys = {silo:_has_api_key(silo) for silo in recognized_silos.keys()}
 
-    if any(available_keys.values()):
+    if recognized_silos and any(available_keys.values()):
+        action_log(f"I know how to publish to these places: {list(recognized_silos.keys())}")
         action_log("I'll do what I can.")
         if not all(available_keys.values()):
             action_log(f"But I don't have API keys for these places: {[silo for (silo, available) in available_keys.items() if not available]}")

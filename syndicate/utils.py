@@ -51,11 +51,13 @@ def file_contents(filename):
 
 def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
     files = get_commit_payload()
-    assert files, "could not fetch commit payload"
+    assert files, "commit had no files in its payload"
 
     posts = [file for file in files if file['filename'].startswith(post_dir)]
-    post_contents = {post['status']:file_contents(post['filename']) for post in posts}
+    if not posts:
+        return None
 
+    post_contents = {post['status']:file_contents(post['filename']) for post in posts}
     return {
         'added': [contents for (status, contents) in post_contents.items() if status == 'added'],
         'modified': [contents for (status, contents) in post_contents.items() if status == 'modified']

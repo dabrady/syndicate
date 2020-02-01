@@ -17,7 +17,7 @@ action_inputs = {
 }
 
 # Syndicate
-results = syndicate.elsewhere(**action_inputs)
+results = syndicate.elsewhere(action_inputs['silos'])
 action_output('syndicated_posts', results)
 
 ## TODO commit up here using 'SYNDICATED_POSTS' or results
