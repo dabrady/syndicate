@@ -1,4 +1,4 @@
-from syndicate.utils import action_log_group, action_log, get_canonical_url
+from syndicate.utils import action_log_group, action_log, get_canonical_url, yaml_sequence
 import frontmatter as frontmatter
 import requests
 
@@ -8,13 +8,18 @@ def do_the_thing(posts, api_key):
     action_log("You want to syndicate these posts:")
     action_log(posts)
 
+    for post in posts['added']:
+        results = _draft(post, api_key)
+        action_log("Draft success!")
+        action_log(results)
+
     return True
 
 ### privates ###
 
 ## This is a simple semantic wrapper around the DEV API, currently in beta.
 
-def _fetch(api_key=None, post_id=None):
+def _fetch(post_id=None, api_key=None):
     assert api_key, "missing API key"
 
     headers = {
@@ -48,27 +53,36 @@ def _draft(post, api_key=None):
     assert api_key, "missing API key"
     assert post, "missing post"
 
-    raw_contents = post.decoded.decode('utf-8')
-    front, _ = frontmatter.parse(raw_contents)
-    assert front.get('title'), "can't draft an article without a title"
-
-    payload = {
-        'article': {
-            'title': front['title'],
-            'published': False,
-            'tags': front.get('tags', []),
-            'series': front.get('series', None),
-            'canonical_url': get_canonical_url(post.path),
-            'body_markdown': raw_contents
-        }
-    }
+    payload = _payload_for(post)
 
     action_log("Drafting a post with this payload:")
     action_log(payload)
-    # endpoint = "https://dev.to/api/articles"
+    endpoint = "https://dev.to/api/articles"
+    headers = {
+        'api-key': api_key
+    }
+    response = requests.post(endpoint, headers=headers, json=payload)
+    response.raise_for_status()
+    return response.json()
 
 def _publish():
     pass
 
 def _update():
     pass
+
+def _payload_for(post):
+    raw_contents = post.decoded.decode('utf-8')
+    front, body = frontmatter.parse(raw_contents)
+    assert front.get('title'), "article is missing a title"
+
+    return {
+        'article': {
+            'title': front['title'],
+            'published': False,
+            'tags': yaml_sequence(front.get('tags', None)),
+            'series': front.get('series', None),
+            'canonical_url': get_canonical_url(post),
+            'body_markdown': body
+        }
+    }
