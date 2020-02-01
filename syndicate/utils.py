@@ -56,12 +56,9 @@ def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
     posts = [file for file in files if file['filename'].startswith(post_dir)]
     if not posts:
         return None
-
-    post_contents = {post['status']:file_contents(post['filename']) for post in posts}
-    return {
-        'added': [contents for (status, contents) in post_contents.items() if status == 'added'],
-        'modified': [contents for (status, contents) in post_contents.items() if status == 'modified']
-    }
+    else:
+        # Don't care about the Git status: it might not be in sync with the silo
+        return [file_contents(post['filename']) for post in posts]
 
 def get_canonical_url(post):
     assert os.getenv("GITHUB_REPOSITORY"), "GITHUB_REPOSITORY not available"
