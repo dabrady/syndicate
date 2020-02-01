@@ -15,7 +15,7 @@ def elsewhere(silos):
     recognized_silos = {silo:spec for (silo,spec) in specs.items() if spec}
     action_log(f"I know how to publish to these places: {list(recognized_silos.keys())}")
 
-    available_keys = {silo:bool(_get_api_key(silo)) for silo in recognized_silos.keys()}
+    available_keys = {silo:_has_api_key(silo) for silo in recognized_silos.keys()}
 
     if not all(available_keys.values()):
         action_log(f"But I don't have API keys for these places: {[silo for (silo, available) in available_keys.items() if not available]}")
@@ -32,10 +32,10 @@ def elsewhere(silos):
     action_output("time", datetime.now())
 
 ### privates ###
-_API_KEY = lambda s: f"{s}_API_KEY"
+_API_KEY = lambda s: f"{s.upper()}_API_KEY"
 
 def _locate(silo):
-    return importlib.util.find_spec(f'syndicate.silos.{silo}')
+    return importlib.util.find_spec(f'syndicate.silos.{silo.lower()}')
 
 def _syndicate(silo_spec, api_key, posts):
     if silo_spec and api_key:
