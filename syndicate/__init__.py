@@ -7,7 +7,10 @@ import importlib.util
 
 def elsewhere(silos):
     posts = get_posts()
-    assert posts, "no posts to update"
+    if not posts:
+        action_log("No posts added or updated, nothing to see here.")
+        action_output("time", datetime.now())
+        return
 
     action_log(f"You want to publish to these places: {silos}")
 
