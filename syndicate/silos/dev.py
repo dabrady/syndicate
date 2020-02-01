@@ -86,7 +86,7 @@ def _update():
 
 def _payload_for(post):
     raw_contents = post.decoded.decode('utf-8')
-    assert frontmatter.checks(raw_contents)
+    assert frontmatter.checks(raw_contents), "article is missing frontmatter"
 
     front, body = frontmatter.parse(raw_contents)
     assert front.get('title'), "article is missing a title"
