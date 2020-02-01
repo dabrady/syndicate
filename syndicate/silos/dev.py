@@ -103,7 +103,9 @@ def _update(post, api_key=None):
 
 def _id_for(post):
     assert post, "missing post"
-    return _front_of(post)['dev_id']
+    id = _front_of(post).get('dev_id')
+    assert id, "missing post id for DEV"
+    return id
 
 def _front_of(post):
     assert post, "missing post"
