@@ -1,4 +1,10 @@
-on: [push]
+on:
+  push:
+    branches:
+    - master
+    - develop
+    paths:
+    - 'pages/**/*.mdx?'
 
 jobs:
   syndicate:
