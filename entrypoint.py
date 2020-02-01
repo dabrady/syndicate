@@ -12,7 +12,8 @@ import syndicate
 from syndicate.utils import action_output, action_setenv
 
 action_inputs = {
-    'silos': os.getenv('INPUT_SILOS').splitlines()
+    'silos': os.getenv('INPUT_SILOS').splitlines(),
+    'commit': json.loads(os.getenv('INPUT_COMMIT'))
 }
 
 # Syndicate

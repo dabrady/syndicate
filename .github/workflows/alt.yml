@@ -26,6 +26,7 @@ jobs:
       uses: dabrady/syndicate@develop
       with:
         silos: DEV
+        commit: true
       env:
         DEV_API_KEY: ${{ secrets.DEV_API_KEY }}
 
@@ -47,4 +48,9 @@ jobs:
     - name: Report results
       id: report
       run:
-        'echo The results are in! "\n$SYNDICATED_POSTS"'
+        'echo The results are in! "${{ toJSON(env.SYNDICATED_POSTS) }}"'
+
+    # - name: Update posts with syndicate IDs
+    #   uses: dabrady/syndicate@develop
+    #   with:
+    #     commit: true
