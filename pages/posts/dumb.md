@@ -1,5 +1,5 @@
 ---
-dev-id: 252963
+dev_id: 252963
 title: this is not a post
 ---
 

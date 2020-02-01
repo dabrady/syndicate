@@ -80,8 +80,11 @@ def commit_silo_id(post, post_id, silo=None):
     assert silo, "silo not specified"
 
     fronted_post = frontmatter.loads(post.decoded.decode('utf-8'))
-    fronted_post[f'{silo}-id'] = post_id
+    fronted_post[f'{silo}_id'] = post_id
 
     action_log(f"Updating frontmatter with ID for {silo}")
-    pushed_change = post.update(f'syndicate({silo}): adding post id to frontmatter', frontmatter.dumps(fronted_post).encode('utf-8'))
+    pushed_change = post.update(
+        f'syndicate({silo}): adding post ID to frontmatter',
+        frontmatter.dumps(fronted_post).encode('utf-8')
+    )
     action_log(pushed_change)
