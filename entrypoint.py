@@ -13,7 +13,7 @@ from syndicate.utils import action_output, action_setenv
 
 action_inputs = {
     'silos': os.getenv('INPUT_SILOS').splitlines(),
-    'commit': json.loads(os.getenv('INPUT_COMMIT'))
+    'commit_on_create': json.loads(os.getenv('INPUT_COMMIT_ON_CREATE'))
 }
 
 # Syndicate

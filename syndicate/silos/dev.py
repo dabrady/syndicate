@@ -14,17 +14,17 @@ def syndicate(posts, api_key):
     }
     for post in posts['added']:
         post_id = _draft(post, api_key)
-        if results:
+        if post_id:
             action_log("Draft success!")
-            res['added'].append(post_id)
+            results['added'].append(post_id)
         else:
             action_warn(f"Draft failure for '{post.name}'")
 
     for post in posts['modified']:
         post_id = _update(post, api_key)
-        if results:
+        if post_id:
             action_log("Update success!")
-            res['modified'].append(post_id)
+            results['modified'].append(post_id)
         else:
             action_warn(f"Update failure for '{post.name}'")
 

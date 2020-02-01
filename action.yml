@@ -5,8 +5,8 @@ inputs:
     description: 'A list of names indicating the platforms to publish your content to.'
     required: true
     default: ''
-  commit:
-    description: 'Set this to true to update the frontmatter of your posts with their syndicate IDs'
+  commit_on_create:
+    description: 'Set this to true to update the frontmatter of new posts with their syndicate IDs'
     required: false
     default: false
 outputs:
