@@ -5,7 +5,7 @@ import sys
 import os
 import importlib.util
 
-def elsewhere(silos=[], commit_on_create=False):
+def elsewhere(silos):
     posts = get_posts()
     if not posts:
         action_log("No posts added or updated, nothing to see here.")
@@ -26,12 +26,6 @@ def elsewhere(silos=[], commit_on_create=False):
             action_log(f"But I don't have API keys for these places: {[silo for (silo, available) in available_keys.items() if not available]}")
 
         results = {silo:_syndicate(spec, _get_api_key(silo), posts) for (silo,spec) in specs.items() if _has_api_key(silo)}
-
-        if commit_on_create:
-            action_log("Sorry, commit not yet supported")
-            pass
-        else:
-            action_log("You opted not to update your repo with the syndicate IDs of newly added posts")
 
         action_output("time", datetime.now())
         return results

@@ -83,6 +83,7 @@ def _draft(post, api_key=None):
         results = response.json()
         post_id = results['id']
         assert post_id
+        ## TODO Move this up to `elsewhere`
         commit_silo_id(post, post_id, silo='dev')
         return post_id
 

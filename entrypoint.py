@@ -9,7 +9,7 @@ ACTION_SOURCE='/action'
 sys.path.insert(0, os.path.abspath(ACTION_SOURCE))
 
 import syndicate
-from syndicate.utils import action_output, action_setenv
+from syndicate.utils import action_log, action_output, action_setenv
 
 action_inputs = {
     'silos': os.getenv('INPUT_SILOS').splitlines(),
@@ -19,6 +19,13 @@ action_inputs = {
 # Syndicate
 results = syndicate.elsewhere(**action_inputs)
 action_output('syndicated_posts', results)
+
+## TODO commit up here using 'SYNDICATED_POSTS' or results
+if action_inputs['commit_on_create']:
+    action_log("Sorry, commit not yet supported")
+else:
+    action_log("You opted not to update your repo with the syndicate IDs of newly added posts")
+
 if results:
     # Compile results for future steps.
     previous_results = os.getenv('SYNDICATED_POSTS')
