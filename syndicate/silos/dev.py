@@ -1,4 +1,4 @@
-from syndicate.utils import action_log_group, action_log, get_canonical_url, yaml_sequence, commit_silo_id
+from syndicate.utils import action_log_group, action_log, action_error, get_canonical_url, yaml_sequence, commit_silo_id
 import frontmatter as frontmatter
 import requests
 
@@ -62,7 +62,11 @@ def _draft(post, api_key=None):
         'api-key': api_key
     }
     response = requests.post(endpoint, headers=headers, json=payload)
-    response.raise_for_status()
+
+    if response.status_code != requests.codes.created:
+        action_error("Failed to create draft!")
+        action_error(response.json())
+        return None
 
     results = response.json()
     assert results['id']
