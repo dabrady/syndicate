@@ -22,7 +22,11 @@ jobs:
           medium
           mars
       env:
+        # This is provided to all actions by Github.
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Tell me the path (relative to the project root) where your posts live, so I can find them.
+        # Defaults to 'posts'.
+        SYNDICATE_POST_DIR: 'pages/posts'
         # Set necessary API keys as secrets of your repo and specify them here in this format:
         #
         #   <silo name>_API_KEY

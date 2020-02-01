@@ -46,7 +46,7 @@ def file_contents(filename):
     assert os.getenv("GITHUB_SHA"), "GITHUB_SHA not available"
     return repo().file_contents(filename, os.getenv("GITHUB_SHA"))
 
-def get_posts(post_dir='pages/posts'):
+def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
     files = get_commit_payload()
     assert files, "could not fetch commit payload"
 
