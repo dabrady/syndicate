@@ -51,3 +51,10 @@ def test_draft_returns_something_on_success(requests_mock, monkeypatch):
     monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
     requests_mock.post("https://dev.to/api/articles", status_code=201, json={ 'type_of': 'article', 'id': 42 })
     assert dev._draft(MockPost(), api_key='fake_api_key')
+
+def test_draft_updates_post_on_success(requests_mock, monkeypatch):
+    monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
+    requests_mock.post("https://dev.to/api/articles", status_code=201, json={ 'type_of': 'article', 'id': 42 })
+    mock = MockPost()
+    dev._draft(mock, api_key='fake_api_key')
+    assert mock.updated
