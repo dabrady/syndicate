@@ -1,0 +1,42 @@
+name: "An alternate way to syndicate"
+on:
+  push:
+    branches:
+    - master
+    - develop
+    # paths:
+    # - 'pages/**/*.mdx?'
+
+jobs:
+  syndicate:
+    runs-on: ubuntu-latest
+    name: Syndicate posts
+    env:
+      # This is provided to all actions by Github, and needed to access the posts
+      # in your repository.
+      # @see https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Tell me the path (relative to the project root) where your posts live, so I can find them.
+      # Defaults to 'posts'.
+      SYNDICATE_POST_DIR: 'pages/posts'
+    steps:
+    - name: Push to DEV.to
+      id: DEV
+      uses: dabrady/syndicate@develop
+      with:
+        silos: DEV
+      env:
+        DEV_API_KEY: ${{ secrets.DEV_API_KEY }}
+
+    - name: Push to Medium
+      uses: dabrady/syndicate@develop
+      id: Medium
+      with:
+        silos: Medium
+
+    - name: Push to Mars
+      id: Planet_Mars
+      uses: dabrady/syndicate@develop
+      with:
+        silos: Planet_Mars
