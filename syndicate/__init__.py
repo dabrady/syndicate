@@ -5,7 +5,7 @@ import sys
 import os
 import importlib.util
 
-def elsewhere(silos):
+def elsewhere(silos=None, commit=False):
     posts = get_posts()
     if not posts:
         action_log("No posts added or updated, nothing to see here.")

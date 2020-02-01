@@ -17,7 +17,7 @@ action_inputs = {
 }
 
 # Syndicate
-results = syndicate.elsewhere(action_inputs['silos'])
+results = syndicate.elsewhere(**action_inputs)
 action_output('syndicated_posts', results)
 if results:
     # Compile results for future steps.
