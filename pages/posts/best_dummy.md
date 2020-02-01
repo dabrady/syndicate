@@ -4,6 +4,7 @@ tags:
   - thinkdeep
   - discuss
   - magic
+  - foon
 series:
 ---
 

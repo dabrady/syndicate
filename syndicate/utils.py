@@ -30,24 +30,27 @@ def action_log_group(title):
 
 # Memoize authentication
 @functools.lru_cache(maxsize=1)
-def github():
+def repo():
     assert os.getenv("GITHUB_TOKEN"), "GITHUB_TOKEN not available"
-    return github3.login(token=os.getenv("GITHUB_TOKEN"))
+    assert os.getenv("GITHUB_REPOSITORY"), "GITHUB_REPOSITORY not available"
+
+    gh = github3.login(token=os.getenv("GITHUB_TOKEN"))
+    return gh.repository(*os.getenv("GITHUB_REPOSITORY").split('/'))
 
 def get_commit_payload():
-    assert os.getenv("GITHUB_REPOSITORY"), "GITHUB_REPOSITORY not available"
     assert os.getenv("GITHUB_SHA"), "GITHUB_SHA not available"
+    return repo().commit(os.getenv("GITHUB_SHA")).files
 
-    repo = github().repository(*os.getenv("GITHUB_REPOSITORY").split('/'))
-    commit = repo.commit(os.getenv("GITHUB_SHA"))
-    return (repo, commit)
+def file_contents(filename):
+    assert os.getenv("GITHUB_SHA"), "GITHUB_SHA not available"
+    return repo().file_contents(filename, os.getenv("GITHUB_SHA"))
 
 def get_posts(post_dir='pages/posts'):
-    repo, commit = get_commit_payload()
-    assert commit, "could not fetch commit payload"
+    files = get_commit_payload()
+    assert files, "could not fetch commit payload"
 
-    posts = [file for file in commit.files if file['filename'].startswith(post_dir)]
-    post_contents = {post['status']:repo.file_contents(post['filename'], commit.sha) for post in posts}
+    posts = [file for file in files if file['filename'].startswith(post_dir)]
+    post_contents = {post['status']:file_contents(post['filename']) for post in posts}
 
     return {
         'added': [contents for (status, contents) in post_contents.items() if status == 'added'],

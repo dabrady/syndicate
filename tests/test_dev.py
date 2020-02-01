@@ -1,5 +1,7 @@
 from syndicate.silos import dev
+from .mocks import MockPost
 import pytest
+import requests
 import requests_mock
 import re
 
@@ -31,3 +33,24 @@ def test_fetch_request_invalid_post(requests_mock):
     requests_mock.get("https://dev.to/api/articles/me/all", json=fake_results)
     results = dev._fetch(invalid_post_id, api_key='fake_api_key')
     assert results is None
+
+def test_draft_error_when_api_key_missing():
+    with pytest.raises(AssertionError):
+        dev._draft('asdf')
+
+def test_draft_error_when_post_missing():
+    with pytest.raises(AssertionError):
+        dev._draft(None)
+
+def test_draft_error_when_request_fails(requests_mock, monkeypatch):
+    monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
+    requests_mock.post("https://dev.to/api/articles", status_code=422)
+    post = MockPost()
+    with pytest.raises(requests.exceptions.HTTPError):
+        dev._draft(post, api_key='fake_api_key')
+
+def test_draft_returns_something_on_success(requests_mock, monkeypatch):
+    fake_results = { 'type_of': 'article', 'id': 42 }
+    requests_mock.post("https://dev.to/api/articles", status_code=200, json=fake_results)
+    monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
+    assert dev._draft(MockPost(), api_key='fake_api_key')
