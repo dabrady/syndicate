@@ -42,15 +42,12 @@ def test_draft_error_when_post_missing():
     with pytest.raises(AssertionError):
         dev._draft(None)
 
-def test_draft_error_when_request_fails(requests_mock, monkeypatch):
+def test_draft_returns_nothing_when_request_fails(requests_mock, monkeypatch):
     monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
-    requests_mock.post("https://dev.to/api/articles", status_code=422)
-    post = MockPost()
-    with pytest.raises(requests.exceptions.HTTPError):
-        dev._draft(post, api_key='fake_api_key')
+    requests_mock.post("https://dev.to/api/articles", status_code=422, json={"error": "you made a fake request"})
+    assert not dev._draft(MockPost(), api_key='fake_api_key')
 
 def test_draft_returns_something_on_success(requests_mock, monkeypatch):
-    fake_results = { 'type_of': 'article', 'id': 42 }
-    requests_mock.post("https://dev.to/api/articles", status_code=200, json=fake_results)
     monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
+    requests_mock.post("https://dev.to/api/articles", status_code=201, json={ 'type_of': 'article', 'id': 42 })
     assert dev._draft(MockPost(), api_key='fake_api_key')
