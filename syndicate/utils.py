@@ -84,7 +84,7 @@ def fronted(post):
 def id_for(post, silo):
     assert post, "missing post"
     assert silo, "missing silo"
-    return fronted(post).get(f'{silo}_id')
+    return fronted(post).get(f'{silo}_syndicate_id') # TODO extract this template
 
 def commit_silo_id(post, post_id, silo):
     assert post, "missing post info"
@@ -92,7 +92,7 @@ def commit_silo_id(post, post_id, silo):
     assert silo, "silo not specified"
 
     fronted_post = fronted(post)
-    fronted_post[f'{silo}_id'] = post_id
+    fronted_post[f'{silo}_syndicate_id'] = post_id
 
     action_log(f"Updating frontmatter with ID for {silo}")
     pushed_change = post.update(
