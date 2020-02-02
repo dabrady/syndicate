@@ -2,6 +2,7 @@ import frontmatter
 import functools
 import github3
 import os
+import requests
 
 ### Github Action utilities ###
 def action_log(msg):
@@ -86,6 +87,7 @@ def id_for(post, silo):
     assert silo, "missing silo"
     return fronted(post).get(f'{silo}_syndicate_id') # TODO extract this template
 
+# @DEPRECATED, DELETEME
 def commit_silo_id(post, post_id, silo):
     assert post, "missing post info"
     assert post_id, "missing post ID"
@@ -101,21 +103,85 @@ def commit_silo_id(post, post_id, silo):
     )
     action_log(pushed_change)
 
-def update_compiled_output(results):
-    if not results:
-        return
+def job_output(results):
+    assert results, "no results to compile!"
 
     # Compile results for future steps.
-    previous_results = os.getenv('SYNDICATED_POSTS', results)
-    if previous_results != results:
-        syndicated_posts = json.loads(previous_results)
+    syndicated_posts = results
+    if 'SYNDICATED_POSTS' in os.environ:
+        syndicated_posts = json.loads(os.getenv('SYNDICATED_POSTS'))
         syndicated_posts.update(results)
     action_setenv('SYNDICATED_POSTS', json.dumps(syndicated_posts))
+    return syndicated_posts
 
+def mark_syndicated_posts(result_set):
+    assert result_set, "no results to mark as syndicated!"
+    action_log('marking!!!')
 
-def mark_syndicated_posts(result_set, all=False):
-    assert results, "no results to mark as syndicated!"
-    action_log(f'marking {"all" if all else "most recent"}!!!')
+    for (silo, results) in result_set.items():
+        if results['added']:
+            action_log(f"TODO mark these for {silo}: {results['added']}")
+        else:
+            action_log(f"No new posts syndicated to {silo}")
 
-    for (silo, result) in result_set.items():
-        pass
+def commit_post_changes(new_contents_by_post_path):
+    assert os.getenv("GITHUB_TOKEN"), "GITHUB_TOKEN not available"
+    assert os.getenv("GITHUB_REPOSITORY"), "GITHUB_REPOSITORY not available"
+    assert os.getenv("GITHUB_SHA"), "GITHUB_SHA not available"
+    assert os.getenv("GITHUB_REF"), "GITHUB_REF not available"
+    parent_sha = os.getenv("GITHUB_SHA")
+
+    ## NOTE
+    # Following the recipe outlined here for creating a commit consisting of
+    # multiple file updates:
+    #     https://developer.github.com/v3/git/
+    #
+    # 1. Get the current commit object
+    # 2. Retrieve the tree it points to
+    # 3. Retrieve the content of the blob object that tree has for that
+    #    particular file path
+    # 4. Change the content somehow and post a new blob object with that new
+    #    content, getting a blob SHA back
+    # 5. Post a new tree object with that file path pointer replaced with your
+    #    new blob SHA getting a tree SHA back
+    # 6. Create a new commit object with the current commit SHA as the parent
+    #    and the new tree SHA, getting a commit SHA back
+    # 7. Update the reference of your branch to point to the new commit SHA
+    ##
+
+    # Create new blobs in the repo's Git database containing the updated contents of our posts.
+    new_blobs_by_post = {path:repo().create_blob(new_contents, 'utf-8') for (path, new_contents) in new_contents_by_post_path.items()}
+    # Create a new tree with our updated blobs for the post paths.
+    new_tree = repo().create_tree(
+        [
+            {
+                'path': path,
+                'mode': '100644', # 'file', @see https://developer.github.com/v3/git/trees/#tree-object
+                'type': 'blob',
+                'sha':  blob_sha
+            }
+            for (path, blob_sha) in new_blobs_by_post.items()
+        ],
+        base_tree=parent_sha
+    )
+    # NOTE The github3 package I'm using apparently doesn't support updating refs -_-
+    # Hand-rolling my own using the Github API directly.
+    # @see https://developer.github.com/v3/
+    headers ={
+        'Authorization': f"token {os.getenv('GITHUB_TOKEN')}",
+        'Accept': 'application/vnd.github.v3+json'
+    }
+    endpoint = f'https://api.github.com/repos/{os.getenv("GITHUB_REPOSITORY")}/git/{os.getenv("GITHUB_REF")}'
+    data = {
+        'sha': repo().create_commit(
+            'test commit',
+            new_tree.sha,
+            [parent_sha]
+        ).sha
+    }
+    response = requests.put(endpoint, headers=headers, json=data)
+    if response.status_code == requests.codes.ok:
+        return response.json()
+    else:
+        action_error(f"Failed to mark syndicated posts: {response.json()}")
+        return None
