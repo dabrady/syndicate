@@ -101,6 +101,21 @@ def commit_silo_id(post, post_id, silo):
     )
     action_log(pushed_change)
 
-def mark_as_syndicated(result_set):
-    action_log('marking!!!')
-    pass
+def update_compiled_output(results):
+    if not results:
+        return
+
+    # Compile results for future steps.
+    previous_results = os.getenv('SYNDICATED_POSTS', results)
+    if previous_results != results:
+        syndicated_posts = json.loads(previous_results)
+        syndicated_posts.update(results)
+    action_setenv('SYNDICATED_POSTS', json.dumps(syndicated_posts))
+
+
+def mark_syndicated_posts(result_set, all=False):
+    assert results, "no results to mark as syndicated!"
+    action_log(f'marking {"all" if all else "most recent"}!!!')
+
+    for (silo, result) in result_set.items():
+        pass

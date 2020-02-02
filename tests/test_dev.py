@@ -1,3 +1,4 @@
+from syndicate.utils import id_for
 from syndicate.silos import dev
 from .mocks import MockPost
 import pytest
@@ -58,16 +59,6 @@ def test_draft_returns_something_on_success(requests_mock, monkeypatch):
         json={ 'type_of': 'article', 'id': 42 })
     assert dev._draft(MockPost(), api_key='fake_api_key')
 
-def test_draft_updates_post_on_success(requests_mock, monkeypatch):
-    monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
-    requests_mock.post(
-        "https://dev.to/api/articles",
-        status_code=requests.codes.created,
-        json={ 'type_of': 'article', 'id': 42 })
-    mock = MockPost()
-    dev._draft(mock, api_key='fake_api_key')
-    assert mock.updated
-
 def test_update_error_when_api_key_missing():
     with pytest.raises(AssertionError):
         dev._update(MockPost())
@@ -80,7 +71,7 @@ def test_update_returns_nothing_when_request_fails(requests_mock, monkeypatch):
     monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
     mock = MockPost()
     requests_mock.put(
-        f"https://dev.to/api/articles/{mock.front['dev_id']}",
+        f"https://dev.to/api/articles/{id_for(mock, dev.SILO)}",
         status_code=requests.codes.unprocessable_entity,
         json={"error": "you made an unintelligble request"})
     assert not dev._update(mock, api_key='fake_api_key')
@@ -88,7 +79,7 @@ def test_update_returns_nothing_when_request_fails(requests_mock, monkeypatch):
 def test_update_returns_something_on_success(requests_mock, monkeypatch):
     monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
     mock = MockPost()
-    mock_id= mock.front['dev_id']
+    mock_id= id_for(mock, dev.SILO)
     requests_mock.put(
         f"https://dev.to/api/articles/{mock_id}",
         status_code=requests.codes.ok,

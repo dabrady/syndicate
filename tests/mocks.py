@@ -8,7 +8,7 @@ class MockPost:
         self.raw_contents = textwrap.dedent(
             """
             ---
-            dev_id: 42
+            dev_syndicate_id: 42
             title: A beautiful mock
             tags: beauty, fake
             ---
@@ -16,8 +16,5 @@ class MockPost:
             """).strip()
         self.front, _ = frontmatter.parse(self.raw_contents)
         self.decoded = self.raw_contents.encode('utf-8')
-        self.html_url = 'https://silo.com/a-beautiful-mock'
-        self.updated = False
-
-    def update(self, *args, **kwargs):
-        self.updated = True
+        self.name = 'a-beautiful-mock.md'
+        self.html_url = f'https://silo.com/{self.name}'
