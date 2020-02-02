@@ -3,9 +3,9 @@ description: 'Publish content to other places'
 inputs:
   silos: # id of input
     description: 'A list of names indicating the platforms to publish your content to.'
-    required: true
+    required: false
     default: ''
-  commit_on_create:
+  mark_as_syndicated:
     description: 'Set this to true to update the frontmatter of new posts with their syndicate IDs'
     required: false
     default: false

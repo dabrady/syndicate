@@ -13,7 +13,7 @@ from syndicate.utils import action_log, action_output, action_setenv, mark_as_sy
 
 action_inputs = {
     'silos': os.getenv('INPUT_SILOS').splitlines(),
-    'commit_on_create': json.loads(os.getenv('INPUT_COMMIT_ON_CREATE'))
+    'mark_as_syndicated': json.loads(os.getenv('INPUT_MARK_AS_SYNDICATED'))
 }
 
 # Syndicate
@@ -31,13 +31,14 @@ if results:
         action_setenv('SYNDICATED_POSTS', json.dumps(syndicated_posts))
 
 ## TODO commit up here using 'SYNDICATED_POSTS' or results
-if action_inputs['commit_on_create']:
+if action_inputs['mark_as_syndicated']:
     # NOTE In the special case where no silos were provided, commit all compiled results
     if action_inputs['silos']:
         action_log("marking most recent results")
         mark_as_syndicated(results)
     else:
         action_log("marking all results")
+        ## TODO fix null pointer JSON parsing
         mark_as_syndicated(json.loads(os.getenv('SYNDICATED_POSTS')))
 else:
     action_log("You opted not to update your repo with the syndicate IDs of newly added posts")

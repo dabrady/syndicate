@@ -26,31 +26,27 @@ jobs:
       uses: dabrady/syndicate@develop
       with:
         silos: DEV
-        commit_on_create: true
+        mark_as_syndicated: true
       env:
         DEV_API_KEY: ${{ secrets.DEV_API_KEY }}
 
     - name: Report DEV.to results
       run: 'echo "${{ toJSON(steps.DEV.outputs) }}"'
 
-    - name: Push to Medium
+    - name: Push to Medium and Planet Mars
       uses: dabrady/syndicate@develop
       id: Medium
       with:
-        silos: Medium
-
-    - name: Push to Mars
-      id: Planet_Mars
-      uses: dabrady/syndicate@develop
-      with:
-        silos: Planet_Mars
+        silos: |
+          Medium
+          Planet_Mars
 
     - name: Report results
       id: report
       run:
-        'echo The results are in! "${{ toJSON(env.SYNDICATED_POSTS) }}"'
+        'echo "The results are in! ${{ toJSON(env.SYNDICATED_POSTS) }}"'
 
     - name: Update posts with syndicate IDs
       uses: dabrady/syndicate@develop
       with:
-        commit_on_create: true
+        mark_as_syndicated: true
