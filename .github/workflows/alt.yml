@@ -4,8 +4,8 @@ on:
     branches:
     - master
     - develop
-    # paths:
-    # - 'pages/**/*.mdx?'
+    paths:
+    - 'pages/**/*.mdx?'
 
 jobs:
   syndicate:
@@ -44,7 +44,7 @@ jobs:
     - name: Report results
       id: report
       run:
-        'echo "The results are in! ${{ toJSON(env.SYNDICATED_POSTS) }}"'
+        'echo "The results are in! ${{ toJSON(env.SYNDICATE_POSTS) }}"'
 
     - name: Update posts with syndicate IDs
       uses: dabrady/syndicate@develop

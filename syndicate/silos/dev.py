@@ -1,14 +1,14 @@
-from syndicate.utils import action_log_group, action_log, action_warn, action_error, get_canonical_url, yaml_sequence, fronted, id_for, commit_silo_id
+from syndicate.utils import action_log_group, action_log, action_warn, action_error, get_canonical_url, yaml_sequence, fronted, syndicate_id_for
 import requests
 
-SILO = 'dev'
+SILO_NAME = 'DEV'
 
-@action_log_group(SILO)
+@action_log_group(SILO_NAME)
 def syndicate(posts, api_key):
     action_log("Hello? Yes, this is DEV.")
     return {
-        'added': [id for id in (_draft(post, api_key) for post in posts if not id_for(post, SILO)) if id],
-        'modified': [id for id in (_update(post, api_key) for post in posts if id_for(post, SILO)) if id]
+        'added': {post.path:_draft(post, api_key) for post in posts if not syndicate_id_for(post, SILO_NAME)},
+        'modified': {post.path:_update(post, api_key) for post in posts if syndicate_id_for(post, SILO_NAME)}
     }
 
 ### privates ###
@@ -65,7 +65,7 @@ def _update(post, api_key=None):
     assert api_key, "missing API key"
     assert post, "missing post"
 
-    endpoint = f'https://dev.to/api/articles/{id_for(post, SILO)}'
+    endpoint = f'https://dev.to/api/articles/{syndicate_id_for(post, SILO_NAME)}'
     headers = {'api-key': api_key}
     payload = {'article': { 'body_markdown': post.decoded.decode('utf-8') } }
     response = requests.put(endpoint, headers=headers, json=payload)

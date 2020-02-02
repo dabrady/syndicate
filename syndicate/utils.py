@@ -1,6 +1,7 @@
 import frontmatter
 import functools
 import github3
+import json
 import os
 import requests
 
@@ -17,9 +18,6 @@ def action_warn(msg):
 def action_error(msg):
     print(f"::error::{msg}")
 
-def action_output(key, value):
-    print(f"::set-output name={key}::{value}")
-
 def action_log_group(title):
     def _decorator(func):
         def _wrapper(*args, **kwargs):
@@ -33,6 +31,20 @@ def action_log_group(title):
 def action_setenv(key, value):
     print(f"::set-env name={key}::{value}")
 
+def action_setoutput(key, value):
+    print(f"::set-output name={key}::{value}")
+
+def job_setoutput(results):
+    # Compile results for future steps
+    syndicated_posts = results
+    if 'SYNDICATE_POSTS' in os.environ:
+        syndicated_posts = job_getoutput()
+        syndicated_posts.update(results)
+    action_setenv('SYNDICATE_POSTS', json.dumps(syndicated_posts))
+
+def job_getoutput():
+    return json.loads(os.getenv('SYNDICATE_POSTS', '{}'))
+
 # Memoize authentication
 @functools.lru_cache(maxsize=1)
 def repo():
@@ -42,17 +54,22 @@ def repo():
     gh = github3.login(token=os.getenv("GITHUB_TOKEN"))
     return gh.repository(*os.getenv("GITHUB_REPOSITORY").split('/'))
 
-def get_commit_payload():
+## NOTE
+## This action may generate a new commit, so we need to be sure we're always
+## using the proper SHA.
+def target_sha():
     assert os.getenv("GITHUB_SHA"), "GITHUB_SHA not available"
-    return repo().commit(os.getenv("GITHUB_SHA")).files
+    return os.getenv('SYNDICATE_SHA', os.getenv("GITHUB_SHA"))
+
+def get_commit_payload():
+    return repo().commit(target_sha()).files
 
 def file_contents(filename):
-    assert os.getenv("GITHUB_SHA"), "GITHUB_SHA not available"
-    return repo().file_contents(filename, os.getenv("GITHUB_SHA"))
+    return repo().file_contents(filename, target_sha())
 
 def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
     files = get_commit_payload()
-    assert files, "commit had no files in its payload"
+    assert files, "target commit was empty"
 
     posts = [file for file in files if file['filename'].startswith(post_dir)]
     if not posts:
@@ -79,79 +96,67 @@ def yaml_sequence(sequence):
 
 def fronted(post):
     assert post, "missing post"
+    if type(post) == frontmatter.Post:
+        return post
     raw_contents = post.decoded.decode('utf-8')
     return frontmatter.loads(raw_contents)
 
-def id_for(post, silo):
+def syndicate_key_for(silo):
+    return f'{silo.lower()}_syndicate_id'
+
+def syndicate_id_for(post, silo):
     assert post, "missing post"
     assert silo, "missing silo"
-    return fronted(post).get(f'{silo}_syndicate_id') # TODO extract this template
+    return fronted(post).get(syndicate_key_for(silo))
 
-# @DEPRECATED, DELETEME
-def commit_silo_id(post, post_id, silo):
-    assert post, "missing post info"
-    assert post_id, "missing post ID"
-    assert silo, "silo not specified"
+def mark_syndicated_posts(siloed_ids_by_path, fronted_posts_by_path):
+    updated_fronted_posts_by_path = {}
+    for (path, siloed_ids) in siloed_ids_by_path.items():
+        fronted_post = fronted_posts_by_path[path]
+        syndicate_ids = {
+            syndicate_key_for(silo):sid
+            for (silo, sid) in siloed_ids.items()
+            if not syndicate_id_for(fronted_post, silo) # ignore already marked posts
+        }
+        # Create new fronted post with old frontmatter merged with syndicate IDs.
+        updated_post = frontmatter.Post(**dict(fronted_post.to_dict(), **syndicate_ids))
 
-    fronted_post = fronted(post)
-    fronted_post[f'{silo}_syndicate_id'] = post_id
+        # Only update if anything changed.
+        if updated_post.keys() != fronted_post.keys():
+            updated_fronted_posts_by_path[path] = updated_post
+    commit_post_changes(updated_fronted_posts_by_path)
 
-    action_log(f"Updating frontmatter with ID for {silo}")
-    pushed_change = post.update(
-        f'syndicate({silo}): adding post ID to frontmatter',
-        frontmatter.dumps(fronted_post).encode('utf-8')
-    )
-    action_log(pushed_change)
-
-def job_output(results):
-    assert results, "no results to compile!"
-
-    # Compile results for future steps.
-    syndicated_posts = results
-    if 'SYNDICATED_POSTS' in os.environ:
-        syndicated_posts = json.loads(os.getenv('SYNDICATED_POSTS'))
-        syndicated_posts.update(results)
-    action_setenv('SYNDICATED_POSTS', json.dumps(syndicated_posts))
-    return syndicated_posts
-
-def mark_syndicated_posts(result_set):
-    assert result_set, "no results to mark as syndicated!"
-    action_log('marking!!!')
-
-    for (silo, results) in result_set.items():
-        if results['added']:
-            action_log(f"TODO mark these for {silo}: {results['added']}")
-        else:
-            action_log(f"No new posts syndicated to {silo}")
-
-def commit_post_changes(new_contents_by_post_path):
+## NOTE
+# Following the recipe outlined here for creating a commit consisting of
+# multiple file updates:
+#     https://developer.github.com/v3/git/
+#
+# 1. Get the current commit object
+# 2. Retrieve the tree it points to
+# 3. Retrieve the content of the blob object that tree has for that
+#    particular file path
+# 4. Change the content somehow and post a new blob object with that new
+#    content, getting a blob SHA back
+# 5. Post a new tree object with that file path pointer replaced with your
+#    new blob SHA getting a tree SHA back
+# 6. Create a new commit object with the current commit SHA as the parent
+#    and the new tree SHA, getting a commit SHA back
+# 7. Update the reference of your branch to point to the new commit SHA
+##
+def commit_post_changes(fronted_posts_by_path):
+    if not fronted_posts_by_path:
+        return None
     assert os.getenv("GITHUB_TOKEN"), "GITHUB_TOKEN not available"
     assert os.getenv("GITHUB_REPOSITORY"), "GITHUB_REPOSITORY not available"
-    assert os.getenv("GITHUB_SHA"), "GITHUB_SHA not available"
     assert os.getenv("GITHUB_REF"), "GITHUB_REF not available"
-    parent_sha = os.getenv("GITHUB_SHA")
-
-    ## NOTE
-    # Following the recipe outlined here for creating a commit consisting of
-    # multiple file updates:
-    #     https://developer.github.com/v3/git/
-    #
-    # 1. Get the current commit object
-    # 2. Retrieve the tree it points to
-    # 3. Retrieve the content of the blob object that tree has for that
-    #    particular file path
-    # 4. Change the content somehow and post a new blob object with that new
-    #    content, getting a blob SHA back
-    # 5. Post a new tree object with that file path pointer replaced with your
-    #    new blob SHA getting a tree SHA back
-    # 6. Create a new commit object with the current commit SHA as the parent
-    #    and the new tree SHA, getting a commit SHA back
-    # 7. Update the reference of your branch to point to the new commit SHA
-    ##
 
     # Create new blobs in the repo's Git database containing the updated contents of our posts.
-    new_blobs_by_post = {path:repo().create_blob(new_contents, 'utf-8') for (path, new_contents) in new_contents_by_post_path.items()}
-    # Create a new tree with our updated blobs for the post paths.
+    new_blobs_by_path = {
+        path:repo().create_blob(frontmatter.dumps(fronted_post), 'utf-8')
+        for (path, fronted_post) in fronted_posts_by_path.items()
+    }
+    parent_sha = target_sha()
+    # Create a new tree with our updated blobs.
     new_tree = repo().create_tree(
         [
             {
@@ -160,27 +165,31 @@ def commit_post_changes(new_contents_by_post_path):
                 'type': 'blob',
                 'sha':  blob_sha
             }
-            for (path, blob_sha) in new_blobs_by_post.items()
+            for (path, blob_sha) in new_blobs_by_path.items()
         ],
         base_tree=parent_sha
     )
+
+    # Update the parent tree with our new subtree.
     # NOTE The github3 package I'm using apparently doesn't support updating refs -_-
     # Hand-rolling my own using the Github API directly.
     # @see https://developer.github.com/v3/
-    headers ={
-        'Authorization': f"token {os.getenv('GITHUB_TOKEN')}",
-        'Accept': 'application/vnd.github.v3+json'
-    }
-    endpoint = f'https://api.github.com/repos/{os.getenv("GITHUB_REPOSITORY")}/git/{os.getenv("GITHUB_REF")}'
-    data = {
-        'sha': repo().create_commit(
-            'test commit',
-            new_tree.sha,
-            [parent_sha]
-        ).sha
-    }
-    response = requests.put(endpoint, headers=headers, json=data)
+    new_commit = repo().create_commit(
+        f'(syndicate): adding syndicate IDs to post frontmatter',
+        new_tree.sha,
+        [parent_sha]
+    )
+    response = requests.put(
+        f'https://api.github.com/repos/{os.getenv("GITHUB_REPOSITORY")}/git/{os.getenv("GITHUB_REF")}',
+        headers={
+            'Authorization': f"token {os.getenv('GITHUB_TOKEN')}",
+            'Accept': 'application/vnd.github.v3+json'
+        },
+        json={'sha': new_commit.sha}
+    )
     if response.status_code == requests.codes.ok:
+        ## NOTE Need to update the reference SHA for future workflow steps.
+        action_setenv('SYNDICATE_SHA', new_commit.sha)
         return response.json()
     else:
         action_error(f"Failed to mark syndicated posts: {response.json()}")

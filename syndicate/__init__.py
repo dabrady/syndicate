@@ -1,20 +1,12 @@
-from datetime import datetime
-from syndicate.utils import action_log, action_warn, action_output, get_posts
+from syndicate.utils import action_log, action_warn
 
 import sys
 import os
 import importlib.util
 
-def elsewhere(silos):
+def elsewhere(posts, silos):
     if not silos:
         action_log('No silos specified, nothing to see here.')
-        action_output("time", datetime.now())
-        return None
-
-    posts = get_posts()
-    if not posts:
-        action_log("No posts added or updated, nothing to see here.")
-        action_output("time", datetime.now())
         return None
 
     action_log(f"You want to publish to these places: {silos}")
@@ -29,17 +21,16 @@ def elsewhere(silos):
         if not all(available_keys.values()):
             action_log(f"But I don't have API keys for these places: {[silo for (silo, available) in available_keys.items() if not available]}")
 
+        # TODO just operate on silos for which we have API keys
         results = {
             silo:_syndicate(spec, _get_api_key(silo), posts)
             for (silo,spec) in specs.items()
             if _has_api_key(silo)
         }
 
-        action_output("time", datetime.now())
         return results
     else:
         action_warn("Sorry, can't help you.")
-        action_output("time", datetime.now())
         return None
 
 ### privates ###

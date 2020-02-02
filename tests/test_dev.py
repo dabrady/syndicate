@@ -1,4 +1,4 @@
-from syndicate.utils import id_for
+from syndicate.utils import syndicate_id_for
 from syndicate.silos import dev
 from .mocks import MockPost
 import pytest
@@ -71,7 +71,7 @@ def test_update_returns_nothing_when_request_fails(requests_mock, monkeypatch):
     monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
     mock = MockPost()
     requests_mock.put(
-        f"https://dev.to/api/articles/{id_for(mock, dev.SILO)}",
+        f"https://dev.to/api/articles/{syndicate_id_for(mock, dev.SILO_NAME)}",
         status_code=requests.codes.unprocessable_entity,
         json={"error": "you made an unintelligble request"})
     assert not dev._update(mock, api_key='fake_api_key')
@@ -79,7 +79,7 @@ def test_update_returns_nothing_when_request_fails(requests_mock, monkeypatch):
 def test_update_returns_something_on_success(requests_mock, monkeypatch):
     monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
     mock = MockPost()
-    mock_id= id_for(mock, dev.SILO)
+    mock_id= syndicate_id_for(mock, dev.SILO_NAME)
     requests_mock.put(
         f"https://dev.to/api/articles/{mock_id}",
         status_code=requests.codes.ok,
