@@ -1,14 +1,14 @@
-from syndicate.utils import action_log_group, action_log, action_warn, action_error, get_canonical_url, yaml_sequence, commit_silo_id
-import frontmatter
+from syndicate.utils import action_log_group, action_log, action_warn, action_error, get_canonical_url, yaml_sequence, fronted, id_for, commit_silo_id
 import requests
 
-@action_log_group("dev")
+SILO = 'dev'
+
+@action_log_group(SILO)
 def syndicate(posts, api_key):
     action_log("Hello? Yes, this is DEV.")
-
     return {
-        'added': [id for id in (_draft(post, api_key) for post in posts if not _id_for(post)) if id],
-        'modified': [id for id in (_update(post, api_key) for post in posts if _id_for(post)) if id]
+        'added': [id for id in (_draft(post, api_key) for post in posts if not id_for(post, SILO)) if id],
+        'modified': [id for id in (_update(post, api_key) for post in posts if id_for(post, SILO)) if id]
     }
 
 ### privates ###
@@ -65,7 +65,7 @@ def _update(post, api_key=None):
     assert api_key, "missing API key"
     assert post, "missing post"
 
-    endpoint = f'https://dev.to/api/articles/{_id_for(post)}'
+    endpoint = f'https://dev.to/api/articles/{id_for(post, SILO)}'
     headers = {'api-key': api_key}
     payload = {'article': { 'body_markdown': post.decoded.decode('utf-8') } }
     response = requests.put(endpoint, headers=headers, json=payload)
@@ -76,19 +76,10 @@ def _update(post, api_key=None):
         results = response.json()
         return results['id']
 
-def _id_for(post):
-    assert post, "missing post"
-    return _fronted(post).get('dev_id')
-
-def _fronted(post):
-    assert post, "missing post"
-    raw_contents = post.decoded.decode('utf-8')
-    return frontmatter.loads(raw_contents)
-
 def _payload_for(post):
     assert post, "missing post"
 
-    fronted_post = _fronted(post)
+    fronted_post = fronted(post)
     assert fronted_post.get('title'), "article is missing a title"
 
     # TODO test if can be accomplished by just sending raw contents as body_markdown
