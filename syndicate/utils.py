@@ -100,3 +100,7 @@ def commit_silo_id(post, post_id, silo):
         frontmatter.dumps(fronted_post).encode('utf-8')
     )
     action_log(pushed_change)
+
+def mark_as_syndicated(result_set):
+    action_log('marking!!!')
+    pass
