@@ -4,9 +4,10 @@ on:
     # Watch these branches...
     branches:
     - master
+    - develop
     # ...for changes to these files.
-    paths:
-    - 'pages/**/*.mdx?'
+    # paths:
+    # - 'pages/**/*.mdx?'
 
 jobs:
   syndicate:

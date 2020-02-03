@@ -3,12 +3,6 @@ from datetime import datetime
 import json
 import os
 import sys
-
-# NOTE This is where our action module lives in the container
-# TODO Is there a way to manipulate the path from Dockerfile?
-ACTION_SOURCE='/action'
-sys.path.insert(0, os.path.abspath(ACTION_SOURCE))
-
 import syndicate
 from syndicate.utils import action_log, action_setoutput, job_getoutput, job_setoutput, get_posts, fronted, mark_syndicated_posts
 
