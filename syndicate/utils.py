@@ -109,22 +109,31 @@ def syndicate_id_for(post, silo):
     assert silo, "missing silo"
     return fronted(post).get(syndicate_key_for(silo))
 
-def mark_syndicated_posts(siloed_ids_by_path, fronted_posts_by_path):
+def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
     updated_fronted_posts_by_path = {}
-    for (path, siloed_ids) in siloed_ids_by_path.items():
+    for (path, syndicate_ids_by_silo) in syndicate_ids_by_path.items():
         fronted_post = fronted_posts_by_path[path]
-        syndicate_ids = {
-            syndicate_key_for(silo):sid
-            for (silo, sid) in siloed_ids.items()
-            if not syndicate_id_for(fronted_post, silo) # ignore already marked posts
-        }
-        # Create new fronted post with old frontmatter merged with syndicate IDs.
-        updated_post = frontmatter.Post(**dict(fronted_post.to_dict(), **syndicate_ids))
 
-        # Only update if anything changed.
-        if updated_post.keys() != fronted_post.keys():
-            updated_fronted_posts_by_path[path] = updated_post
-    commit_post_changes(updated_fronted_posts_by_path)
+        # Format:
+        # {
+        #     'silo_a_syndicate_id': 42,
+        #     'silo_b_syndicate_id': 'abc123',
+        #     ...
+        # }
+        new_syndicate_ids = {
+            syndicate_key_for(silo):sid
+            for (silo, sid) in syndicate_ids_by_silo.items()
+            # Ignore already posts already marked with this silo
+            if not syndicate_id_for(fronted_post, silo)
+        }
+        # Only add to commit if there're any new IDs to add.
+        if not new_syndicate_ids:
+            continue
+
+        # Create new fronted post with old frontmatter merged with syndicate IDs.
+        updated_post = frontmatter.Post(**dict(fronted_post.to_dict(), **new_syndicate_ids))
+        updated_fronted_posts_by_path[path] = updated_post
+    return commit_post_changes(updated_fronted_posts_by_path)
 
 ## NOTE
 # Following the recipe outlined here for creating a commit consisting of

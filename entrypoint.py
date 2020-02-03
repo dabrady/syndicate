@@ -24,16 +24,15 @@ if not posts:
     action_setoutput("time", datetime.now())
     sys.exit()
 
-
 # Result set format:
 # {
 #     '<silo>': {
 #         'added': {
-#             'post/path': <id>,
+#             'path/to/new_post': <id>,
 #             ...
 #         },
 #         'modified': {
-#             'post/path': <id>,
+#             'path/to/updated_post': <id>,
 #             ...
 #         }
 #     },
@@ -65,10 +64,14 @@ if action_inputs['mark_as_syndicated']:
         if results
     }
 
+    if not indexed_paths_by_silo:
+        action_log("Nothing new to mark.")
+        sys.exit()
+
     # {
     #     'path/to/post': {
-    #         'dev': 42,
-    #         'medium': 'abc123',
+    #         '<silo A>': 42,
+    #         '<silo B>': 'abc123',
     #         ...
     #     },
     #     ...
