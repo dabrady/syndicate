@@ -1,5 +1,5 @@
 ---
-dev_syndicate_id: 254196
+dev_syndicate_id: 254362
 title: this is now a post
 ---
 

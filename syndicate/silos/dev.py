@@ -47,9 +47,16 @@ def _fetch(post_id=None, api_key=None):
 def _draft(post, api_key=None):
     assert api_key, "missing API key"
     assert post, "missing post"
+    assert fronted(post).get('title'), "article is missing a title"
 
-    payload = _payload_for(post)
-
+    payload = {
+        'article': {
+            # NOTE This can be overridden by explicitly setting 'published' in
+            # the frontmatter.
+            'published': False,
+            'body_markdown': post.decoded.decode('utf-8')
+        }
+    }
     endpoint = "https://dev.to/api/articles"
     headers = {'api-key': api_key}
     response = requests.post(endpoint, headers=headers, json=payload)
@@ -75,21 +82,3 @@ def _update(post, api_key=None):
     else:
         results = response.json()
         return results['id']
-
-def _payload_for(post):
-    assert post, "missing post"
-
-    fronted_post = fronted(post)
-    assert fronted_post.get('title'), "article is missing a title"
-
-    # TODO test if can be accomplished by just sending raw contents as body_markdown
-    return {
-        'article': {
-            'title': fronted_post['title'],
-            'published': False,
-            'tags': yaml_sequence(fronted_post.get('tags', [])),
-            'series': fronted_post.get('series', None),
-            'canonical_url': get_canonical_url(post),
-            'body_markdown': fronted_post.content
-        }
-    }
