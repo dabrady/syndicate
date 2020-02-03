@@ -72,11 +72,8 @@ def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
     assert files, "target commit was empty"
 
     posts = [file for file in files if file['filename'].startswith(post_dir)]
-    if not posts:
-        return None
-    else:
-        # Ignore deleted files.
-        return [file_contents(post['filename']) for post in posts if post['status'] != 'deleted']
+    # Ignore deleted files.
+    return [file_contents(post['filename']) for post in posts if post['status'] != 'deleted']
 
 def get_canonical_url(post):
     assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
