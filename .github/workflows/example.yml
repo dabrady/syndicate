@@ -53,6 +53,7 @@ jobs:
       with:
         silos: |
           Medium
+          Reddit
           Planet_Mars
         mark_as_syndicated: true
       env:
