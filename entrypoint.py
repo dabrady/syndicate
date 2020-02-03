@@ -11,13 +11,13 @@ action_inputs = {
     'mark_as_syndicated': json.loads(os.getenv('INPUT_MARK_AS_SYNDICATED'))
 }
 
-# Syndicate
 posts = get_posts()
 if not posts:
-    action_log("No posts added or updated, nothing to see here...")
+    action_log("No posts added or updated, nothing to do.")
     action_setoutput("time", datetime.now())
     sys.exit()
 
+# Syndicate
 # Result set format:
 # {
 #     '<silo>': {
@@ -33,9 +33,7 @@ if not posts:
 #     ...
 # }
 syndicated_posts = syndicate.elsewhere(posts, action_inputs['silos']) or {}
-action_setoutput("time", datetime.now())
 action_setoutput('syndicated_posts', syndicated_posts)
-
 # Merge output with output of any previous runs
 job_setoutput(syndicated_posts)
 
@@ -45,7 +43,7 @@ if action_inputs['mark_as_syndicated']:
     # If silos were provided, commit only the results of this step. In the case
     # where no silos were provided, commit all job results so far.
     #
-    # This allows us to bundle sydications into as few or many commits as we
+    # This allows us to bundle syndications into as few or many commits as we
     # want in our workflows.
     ##
     if not action_inputs['silos']:
@@ -80,3 +78,5 @@ if action_inputs['mark_as_syndicated']:
         syndicate_ids_by_path,
         {post.path:fronted(post) for post in posts}
     )
+
+action_setoutput("time", datetime.now())
