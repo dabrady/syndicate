@@ -1,4 +1,4 @@
-from syndicate.utils import action_log_group, action_log, action_warn, action_error, get_canonical_url, yaml_sequence, fronted, syndicate_id_for
+from syndicate.utils import action_log_group, action_log, action_error, fronted, syndicate_id_for
 import requests
 import pprint
 

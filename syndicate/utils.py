@@ -75,22 +75,6 @@ def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
     # Ignore deleted files.
     return [file_contents(post['filename']) for post in posts if post['status'] != 'deleted']
 
-def get_canonical_url(post):
-    assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
-    # return f"https://github.com/{os.getenv('GITHUB_REPOSITORY')}/{post.path}"
-    return post.html_url
-
-def yaml_sequence(sequence):
-    JUST_GIVE_IT_BACK = lambda s: s
-    cases = {
-        # Support simple comma-separated YAML sequences
-        type(''): lambda s: [item.strip() for item in sequence.split(',')],
-        # If the YAML sequence has already been processed into a list, just give it back
-        type([]): JUST_GIVE_IT_BACK
-    }
-    # If I know how to handle it, handle it; otherwise, just give it back
-    return cases.get(type(sequence), JUST_GIVE_IT_BACK)(sequence)
-
 def fronted(post):
     assert post, "missing post"
     if type(post) == frontmatter.Post:
