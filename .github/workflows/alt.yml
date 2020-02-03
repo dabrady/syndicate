@@ -26,7 +26,6 @@ jobs:
       uses: dabrady/syndicate@develop
       with:
         silos: DEV
-        mark_as_syndicated: true
       env:
         DEV_API_KEY: ${{ secrets.DEV_API_KEY }}
 
@@ -40,6 +39,9 @@ jobs:
         silos: |
           Medium
           Planet_Mars
+      env:
+        MEDIUM_API_KEY: "fake"
+        PLANET_MARS_API_KEY: "fake"
 
     - name: Report results
       id: report

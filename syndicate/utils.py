@@ -48,8 +48,8 @@ def job_getoutput():
 # Memoize authentication
 @functools.lru_cache(maxsize=1)
 def repo():
-    assert os.getenv("GITHUB_TOKEN"), "GITHUB_TOKEN not available"
-    assert os.getenv("GITHUB_REPOSITORY"), "GITHUB_REPOSITORY not available"
+    assert os.getenv("GITHUB_TOKEN"), "missing GITHUB_TOKEN"
+    assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
 
     gh = github3.login(token=os.getenv("GITHUB_TOKEN"))
     return gh.repository(*os.getenv("GITHUB_REPOSITORY").split('/'))
@@ -58,7 +58,7 @@ def repo():
 ## This action may generate a new commit, so we need to be sure we're always
 ## using the proper SHA.
 def target_sha():
-    assert os.getenv("GITHUB_SHA"), "GITHUB_SHA not available"
+    assert os.getenv("GITHUB_SHA"), "missing GITHUB_SHA"
     return os.getenv('SYNDICATE_SHA', os.getenv("GITHUB_SHA"))
 
 def get_commit_payload():
@@ -79,7 +79,7 @@ def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
         return [file_contents(post['filename']) for post in posts]
 
 def get_canonical_url(post):
-    assert os.getenv("GITHUB_REPOSITORY"), "GITHUB_REPOSITORY not available"
+    assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
     # return f"https://github.com/{os.getenv('GITHUB_REPOSITORY')}/{post.path}"
     return post.html_url
 
@@ -146,9 +146,9 @@ def mark_syndicated_posts(siloed_ids_by_path, fronted_posts_by_path):
 def commit_post_changes(fronted_posts_by_path):
     if not fronted_posts_by_path:
         return None
-    assert os.getenv("GITHUB_TOKEN"), "GITHUB_TOKEN not available"
-    assert os.getenv("GITHUB_REPOSITORY"), "GITHUB_REPOSITORY not available"
-    assert os.getenv("GITHUB_REF"), "GITHUB_REF not available"
+    assert os.getenv("GITHUB_TOKEN"), "missing GITHUB_TOKEN"
+    assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
+    assert os.getenv("GITHUB_REF"), "missing GITHUB_REF"
 
     # Create new blobs in the repo's Git database containing the updated contents of our posts.
     new_blobs_by_path = {

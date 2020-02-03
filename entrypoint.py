@@ -20,7 +20,7 @@ action_inputs = {
 # Syndicate
 posts = get_posts()
 if not posts:
-    action_log("No posts added or updated, nothing to see here.")
+    action_log("No posts added or updated, nothing to see here...")
     action_setoutput("time", datetime.now())
     sys.exit()
 
@@ -47,6 +47,7 @@ action_setoutput('syndicated_posts', syndicated_posts)
 job_setoutput(syndicated_posts)
 
 if action_inputs['mark_as_syndicated']:
+    action_log("Marking newly syndicated posts...")
     ## NOTE
     # If silos were provided, commit only the results of this step. In the case
     # where no silos were provided, commit all job results so far.
@@ -82,3 +83,5 @@ if action_inputs['mark_as_syndicated']:
         syndicate_ids_by_path,
         {post.path:fronted(post) for post in posts}
     )
+
+    action_log("Done.")
