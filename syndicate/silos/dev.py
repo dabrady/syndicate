@@ -3,7 +3,6 @@ import requests
 import pprint
 
 SILO_NAME = 'DEV'
-
 @action_log_group(SILO_NAME)
 def syndicate(posts, api_key):
     action_log(f"Hello? Yes, this is {SILO_NAME}.")

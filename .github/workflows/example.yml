@@ -4,7 +4,6 @@ on:
     # Watch these branches...
     branches:
     - master
-    - develop
     # ...for changes to these files.
     paths:
     - 'pages/**/*.mdx?'
@@ -51,13 +50,13 @@ jobs:
     - name: Push to Medium and Planet Mars and commit new IDs
       uses: dabrady/syndicate@develop
       with:
+        # Use a multiline YAML string to specify multiple silos.
         silos: |
           Medium
-          Reddit
           Planet_Mars
         mark_as_syndicated: true
       env:
-        MEDIUM_API_KEY: 'fake_key' #${{ secrets.MEDIUM_API_KEY }}
+        MEDIUM_API_KEY: ${{ secrets.MEDIUM_API_KEY }}
         PLANET_MARS_API_KEY: ${{ secrets.MARS_API_KEY }}
 
     # This step will not syndicate any content to any silos, but instead will
