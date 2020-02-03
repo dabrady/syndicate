@@ -1,5 +1,5 @@
 ---
-dev_syndicate_id: 254528
+dev_syndicate_id: 254535
 medium_syndicate_id: 4
 title: a real post
 ---

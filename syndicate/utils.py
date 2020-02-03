@@ -111,7 +111,7 @@ def syndicate_id_for(post, silo):
 
 def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
     updated_fronted_posts_by_path = {}
-    silos = set()
+    silos_included = set()
     for (path, syndicate_ids_by_silo) in syndicate_ids_by_path.items():
         fronted_post = fronted_posts_by_path[path]
 
@@ -121,12 +121,13 @@ def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
         #     'silo_b_syndicate_id': 'abc123',
         #     ...
         # }
-        new_syndicate_ids = {
-            syndicate_key_for(silo):sid
-            for (silo, sid) in syndicate_ids_by_silo.items()
+        new_syndicate_ids = {}
+        for (silo, sid) in syndicate_ids_by_silo.items():
             # Ignore already posts already marked with this silo
-            if not syndicate_id_for(fronted_post, silo)
-        }
+            if not syndicate_id_for(fronted_post, silo):
+                new_syndicate_ids[syndicate_key_for(silo)] = sid
+                silos_included.add(silo)
+
         # Only add to commit if there're any new IDs to add.
         if not new_syndicate_ids:
             continue
@@ -134,8 +135,7 @@ def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
         # Create new fronted post with old frontmatter merged with syndicate IDs.
         updated_post = frontmatter.Post(**dict(fronted_post.to_dict(), **new_syndicate_ids))
         updated_fronted_posts_by_path[path] = updated_post
-        silos.update(syndicate_ids_by_silo.keys())
-    return commit_post_changes(updated_fronted_posts_by_path, silos)
+    return commit_post_changes(updated_fronted_posts_by_path, silos_included)
 
 ## NOTE
 # Following the recipe outlined here for creating a commit consisting of
@@ -156,7 +156,7 @@ def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
 ##
 def commit_post_changes(fronted_posts_by_path, silos):
     if not fronted_posts_by_path:
-        action_log("All good: nothing to change.")
+        action_log("All good: already marked.")
         return None
     assert os.getenv("GITHUB_TOKEN"), "missing GITHUB_TOKEN"
     assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
