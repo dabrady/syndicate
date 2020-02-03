@@ -45,7 +45,7 @@ def job_setoutput(results):
 def job_getoutput():
     return json.loads(os.getenv('SYNDICATE_POSTS', '{}'))
 
-# Memoize authentication
+# Memoize authentication and repo fetching.
 @functools.lru_cache(maxsize=1)
 def repo():
     assert os.getenv("GITHUB_TOKEN"), "missing GITHUB_TOKEN"
@@ -55,7 +55,7 @@ def repo():
     return gh.repository(*os.getenv("GITHUB_REPOSITORY").split('/'))
 
 ## NOTE
-## This action may generate a new commit, so we need to be sure we're always
+## Our action may generate a new commit, so we need to be sure we're always
 ## using the proper SHA.
 def target_sha():
     assert os.getenv("GITHUB_SHA"), "missing GITHUB_SHA"
@@ -75,8 +75,8 @@ def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
     if not posts:
         return None
     else:
-        # Don't care about the Git status: it might not be in sync with the silo
-        return [file_contents(post['filename']) for post in posts]
+        # Ignore deleted files.
+        return [file_contents(post['filename']) for post in posts if post['status'] != 'deleted']
 
 def get_canonical_url(post):
     assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
