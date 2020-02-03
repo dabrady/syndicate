@@ -1,20 +1,25 @@
 name: 'Syndicate'
-description: 'Publish content to other places'
-inputs:
-  silos: # id of input
-    description: 'A list of names indicating the platforms to publish your content to.'
-    required: false
-    default: ''
-  mark_as_syndicated:
-    description: 'Set this to true to update the frontmatter of new posts with their syndicate IDs'
-    required: false
-    default: false
-outputs:
-  # TODO Change this to a map of publish times keyed by silo
-  time: # id of output
-    description: 'The time this action finished'
-  syndicated_posts:
-    description: 'A JSON object reporting the results of syndicating to the specified silos.'
+description: 'Publish your content elsewhere (P.O.S.S.E)'
+branding:
+  icon: rss
+  color: red
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
+
+inputs:
+  silos:
+    description: 'A list of platforms to update with your new/changed content'
+    required: false
+    default: ''
+  mark_as_syndicated:
+    description: 'Commit syndicate IDs to the frontmatter of newly syndicated posts for synchronization purposes'
+    required: false
+    default: false
+
+outputs:
+  time:
+    description: 'The time this action finished'
+  syndicated_posts:
+    description: 'A JSON object mapping silos to the posts that were added or modified on those platforms'
