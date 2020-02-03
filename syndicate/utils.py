@@ -156,6 +156,7 @@ def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
 ##
 def commit_post_changes(fronted_posts_by_path, silos):
     if not fronted_posts_by_path:
+        action_log("All good: nothing to change.")
         return None
     assert os.getenv("GITHUB_TOKEN"), "missing GITHUB_TOKEN"
     assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
@@ -201,6 +202,7 @@ def commit_post_changes(fronted_posts_by_path, silos):
     if response.status_code == requests.codes.ok:
         ## NOTE Need to update the reference SHA for future workflow steps.
         action_setenv('SYNDICATE_SHA', new_commit.sha)
+        action_log("Syndicate posts marked.")
         return response.json()
     else:
         action_error(f"Failed to mark syndicated posts: {response.json()}")

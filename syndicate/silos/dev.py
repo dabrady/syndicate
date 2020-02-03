@@ -1,15 +1,19 @@
 from syndicate.utils import action_log_group, action_log, action_warn, action_error, get_canonical_url, yaml_sequence, fronted, syndicate_id_for
 import requests
+import pprint
 
 SILO_NAME = 'DEV'
 
 @action_log_group(SILO_NAME)
 def syndicate(posts, api_key):
     action_log(f"Hello? Yes, this is {SILO_NAME}.")
-    return {
+    results = {
         'added': {post.path:_draft(post, api_key) for post in posts if not syndicate_id_for(post, SILO_NAME)},
         'modified': {post.path:_update(post, api_key) for post in posts if syndicate_id_for(post, SILO_NAME)}
     }
+    action_log("The results are in:")
+    action_log(pprint.pformat(results))
+    return results
 
 ### privates ###
 

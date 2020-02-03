@@ -56,7 +56,7 @@ jobs:
           Planet_Mars
         mark_as_syndicated: true
       env:
-        MEDIUM_API_KEY: ${{ secrets.MEDIUM_API_KEY }}
+        MEDIUM_API_KEY: 'fake_key' #${{ secrets.MEDIUM_API_KEY }}
         PLANET_MARS_API_KEY: ${{ secrets.MARS_API_KEY }}
 
     # This step will not syndicate any content to any silos, but instead will

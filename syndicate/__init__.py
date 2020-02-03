@@ -10,14 +10,16 @@ def elsewhere(posts, silos):
         action_log('No silos specified, nothing to see here.')
         return None
 
+    # De-dupe.
+    silos = list(set(silos))
     action_log(f"You want to publish to these places: {silos}")
 
     specs = {silo:_locate(silo) for silo in silos if _locate(silo)}
-    if specs.keys() != silos:
+    if list(specs.keys()) != silos:
         action_warn(f"I don't know how to publish to these places: { [silo for silo in silos if silo not in specs] }")
 
     api_keys = {silo:_get_api_key(silo) for silo in silos if _get_api_key(silo)}
-    if api_keys.keys() != silos:
+    if list(api_keys.keys()) != silos:
         action_warn(f"I don't have API keys for these places: { [silo for silo in silos if silo not in api_keys] }")
 
     action_log("I'll do what I can.")
@@ -29,19 +31,19 @@ def elsewhere(posts, silos):
     if results:
         return results
     else:
-        action_warn("Sorry, can't do anything with that.")
+        action_warn("Sorry, can't do anything with that!")
         return None
 
 ### privates ###
 _API_KEY = lambda s: f"{s.upper()}_API_KEY"
 
-@functools.lru_cache(max_size=10)
+@functools.lru_cache(maxsize=10)
 def _locate(silo):
-    return importlib.util.find_spec(f'syndicate.silos.{silo.lower()}').getattr('name', None)
+    return getattr(importlib.util.find_spec(f'syndicate.silos.{silo.lower()}'), 'name', None)
 
 def _syndicate(silo_spec, api_key, posts):
     if silo_spec and api_key:
-        return importlib.import_module(silo_spec.name).syndicate(posts, api_key)
+        return importlib.import_module(silo_spec).syndicate(posts, api_key)
     else:
         return None
 

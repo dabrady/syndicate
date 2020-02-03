@@ -86,5 +86,3 @@ if action_inputs['mark_as_syndicated']:
         syndicate_ids_by_path,
         {post.path:fronted(post) for post in posts}
     )
-
-    action_log("Done.")
