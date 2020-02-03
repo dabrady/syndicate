@@ -111,6 +111,7 @@ def syndicate_id_for(post, silo):
 
 def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
     updated_fronted_posts_by_path = {}
+    silos = set()
     for (path, syndicate_ids_by_silo) in syndicate_ids_by_path.items():
         fronted_post = fronted_posts_by_path[path]
 
@@ -133,7 +134,8 @@ def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
         # Create new fronted post with old frontmatter merged with syndicate IDs.
         updated_post = frontmatter.Post(**dict(fronted_post.to_dict(), **new_syndicate_ids))
         updated_fronted_posts_by_path[path] = updated_post
-    return commit_post_changes(updated_fronted_posts_by_path)
+        silos.update(syndicate_ids_by_silo.keys())
+    return commit_post_changes(updated_fronted_posts_by_path, silos)
 
 ## NOTE
 # Following the recipe outlined here for creating a commit consisting of
@@ -152,7 +154,7 @@ def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
 #    and the new tree SHA, getting a commit SHA back
 # 7. Update the reference of your branch to point to the new commit SHA
 ##
-def commit_post_changes(fronted_posts_by_path):
+def commit_post_changes(fronted_posts_by_path, silos):
     if not fronted_posts_by_path:
         return None
     assert os.getenv("GITHUB_TOKEN"), "missing GITHUB_TOKEN"
@@ -184,7 +186,7 @@ def commit_post_changes(fronted_posts_by_path):
     # Hand-rolling my own using the Github API directly.
     # @see https://developer.github.com/v3/
     new_commit = repo().create_commit(
-        f'(syndicate): adding syndicate IDs to post frontmatter',
+        f'(syndicate): adding IDs for {silos}',
         new_tree.sha,
         [parent_sha]
     )
