@@ -1,9 +1,11 @@
 import frontmatter
 import textwrap
 
-# A light-weight, as-needed mock of github3.repos.contents.Contents
-# @see https://github3.readthedocs.io/en/master/api-reference/repos.html#github3.repos.contents.Contents
 class MockPost:
+    """
+    A light-weight mock of a post object.
+    @see https://github3.readthedocs.io/en/master/api-reference/repos.html#github3.repos.contents.Contents
+    """
     def __init__(self):
         self.raw_contents = textwrap.dedent(
             """
