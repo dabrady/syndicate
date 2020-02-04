@@ -16,7 +16,5 @@ class MockPost:
             ---
             What is a body?
             """).strip()
-        self.front, _ = frontmatter.parse(self.raw_contents)
         self.decoded = self.raw_contents.encode('utf-8')
         self.name = 'a-beautiful-mock.md'
-        self.html_url = f'https://silo.com/{self.name}'
