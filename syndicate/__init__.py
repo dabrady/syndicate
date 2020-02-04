@@ -37,10 +37,10 @@ def elsewhere(posts, silos):
     changes to be made by the author.
     """
     if not posts:
-        action_log("No posts to syndicate, nothing to do.")
+        action_log("No posts to syndicate, nothing to syndicate.")
         return None
     if not silos:
-        action_log('No silos specified, nothing to do.')
+        action_log('No silos specified, nowhere to syndicate.')
         return None
 
     silos = list(set(silos))  # de-dupe the given list of silos
