@@ -219,7 +219,7 @@ def commit_updated_posts(fronted_posts_by_path, silos):
         path:repo().create_blob(frontmatter.dumps(fronted_post), 'utf-8')
         for (path, fronted_post) in fronted_posts_by_path.items()
     }
-    parent_sha = parent_sha()
+    parent = parent_sha()
     # Create a new tree with our updated blobs.
     new_tree = repo().create_tree(
         [
@@ -231,7 +231,7 @@ def commit_updated_posts(fronted_posts_by_path, silos):
             }
             for (path, blob_sha) in new_blobs_by_path.items()
         ],
-        base_tree=parent_sha
+        base_tree=parent
     )
 
     # Update the parent tree with our new subtree.
@@ -241,7 +241,7 @@ def commit_updated_posts(fronted_posts_by_path, silos):
     new_commit = repo().create_commit(
         f'(syndicate): adding IDs for {silos}',
         new_tree.sha,
-        [parent_sha]
+        [parent]
     )
     response = requests.put(
         f'https://api.github.com/repos/{os.getenv("GITHUB_REPOSITORY")}/git/{os.getenv("GITHUB_REF")}',
