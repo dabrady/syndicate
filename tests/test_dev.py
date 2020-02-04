@@ -5,29 +5,29 @@ import pytest
 import requests
 import requests_mock
 
-def test_draft_error_when_api_key_missing():
+def test_create_error_when_api_key_missing():
     with pytest.raises(AssertionError):
-        dev._draft(MockPost())
+        dev._create(MockPost())
 
-def test_draft_error_when_post_missing():
+def test_create_error_when_post_missing():
     with pytest.raises(AssertionError):
-        dev._draft(None)
+        dev._create(None)
 
-def test_draft_returns_nothing_when_request_fails(requests_mock, monkeypatch):
+def test_create_returns_nothing_when_request_fails(requests_mock, monkeypatch):
     monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
     requests_mock.post(
         "https://dev.to/api/articles",
         status_code=requests.codes.unprocessable_entity,
         json={"error": "you made a unintelligble request"})
-    assert not dev._draft(MockPost(), api_key='fake_api_key')
+    assert not dev._create(MockPost(), api_key='fake_api_key')
 
-def test_draft_returns_something_on_success(requests_mock, monkeypatch):
+def test_create_returns_something_on_success(requests_mock, monkeypatch):
     monkeypatch.setenv('GITHUB_REPOSITORY', 'herp/derp')
     requests_mock.post(
         "https://dev.to/api/articles",
         status_code=requests.codes.created,
         json={ 'type_of': 'article', 'id': 42 })
-    assert dev._draft(MockPost(), api_key='fake_api_key')
+    assert dev._create(MockPost(), api_key='fake_api_key')
 
 def test_update_error_when_api_key_missing():
     with pytest.raises(AssertionError):

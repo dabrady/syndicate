@@ -5,9 +5,23 @@ import pprint
 SILO_NAME = 'DEV'
 @action_log_group(SILO_NAME)
 def syndicate(posts, api_key):
+    """
+    Syndicates the given posts to https://dev.to, updating the ones that
+    already exist there and creating articles for the ones that don't.
+
+    By default, articles are created in a "draft"/unpublished state, but this
+    can be overridden by individual posts by specifying `published: true` in
+    their frontmatter, if you prefer a "just do it" approach.
+
+    This uses the DEV API, which is currently in beta: https://docs.dev.to/api
+
+    The required API key can be generated for your account by following the steps
+    outlined here: https://docs.dev.to/api/#section/Authentication
+    """
+
     action_log(f"Hello? Yes, this is {SILO_NAME}.")
     results = {
-        'added': {post.path:_draft(post, api_key) for post in posts if not syndicate_id_for(post, SILO_NAME)},
+        'added': {post.path:_create(post, api_key) for post in posts if not syndicate_id_for(post, SILO_NAME)},
         'modified': {post.path:_update(post, api_key) for post in posts if syndicate_id_for(post, SILO_NAME)}
     }
     action_log("The results are in:")
@@ -16,9 +30,17 @@ def syndicate(posts, api_key):
 
 ### privates ###
 
-## This is a simple semantic wrapper around the DEV API, currently in beta.
+def _create(post, api_key=None):
+    """
+    Creates a new article for the given post on DEV.to and returns the results
+    of the POST request as a dictionary.
 
-def _draft(post, api_key=None):
+    This tries to create an **unpublished** draft. However, the 'published'
+    status can be overridden in the frontmatter of the post itself for a
+    "just do it" approach.
+
+    @see https://docs.dev.to/api/#operation/createArticle
+    """
     assert api_key, "missing API key"
     assert post, "missing post"
     assert fronted(post).get('title'), "article is missing a title"
@@ -43,6 +65,14 @@ def _draft(post, api_key=None):
         return results['id']
 
 def _update(post, api_key=None):
+    """
+    Updates an article corresponding to the given post on DEV.to and returns the
+    results of the PUT request as a dictionary.
+
+    If a corresponding article does not exist, this will fail.
+
+    @see https://docs.dev.to/api/#operation/updateArticle
+    """
     assert api_key, "missing API key"
     assert post, "missing post"
 

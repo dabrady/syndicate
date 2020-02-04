@@ -28,6 +28,7 @@ def action_log_group(title):
     """
 
     def _decorator(func):
+        @functools.wraps(func)
         def _wrapper(*args, **kwargs):
             print(f"::group::{title}")
             result = func(*args, **kwargs)
