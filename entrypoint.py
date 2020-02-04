@@ -53,10 +53,10 @@ if action_inputs['mark_as_syndicated']:
     indexed_paths_by_silo = {
         silo: results['added']
         for (silo, results) in syndicated_posts.items()
-        if results
+        if results and 'added' in results
     }
 
-    if not indexed_paths_by_silo:
+    if not indexed_paths_by_silo or not any(indexed_paths_by_silo.values()):
         action_log("Nothing new to mark.")
         sys.exit()
 
