@@ -4,7 +4,7 @@ import json
 import os
 import sys
 import syndicate
-from syndicate.utils import action_log, action_setoutput, job_getoutput, job_setoutput, get_posts, fronted, mark_syndicated_posts
+from syndicate.utils import action_log, action_setoutput, job_getoutput, job_addoutput, get_posts, fronted, mark_syndicated_posts
 
 action_inputs = {
     'silos': os.getenv('INPUT_SILOS').splitlines(),
@@ -35,7 +35,7 @@ if not posts:
 syndicated_posts = syndicate.elsewhere(posts, action_inputs['silos']) or {}
 action_setoutput('syndicated_posts', syndicated_posts)
 # Merge output with output of any previous runs
-job_setoutput(syndicated_posts)
+job_addoutput(syndicated_posts)
 
 if action_inputs['mark_as_syndicated']:
     action_log("Marking newly syndicated posts...")
