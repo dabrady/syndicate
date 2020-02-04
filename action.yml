@@ -14,7 +14,7 @@ inputs:
     required: false
     default: ''
   mark_as_syndicated:
-    description: 'Commit syndicate IDs to the frontmatter of newly syndicated posts for synchronization purposes'
+    description: 'Commit silo IDs to the frontmatter of newly syndicated posts for synchronization purposes'
     required: false
     default: false
 

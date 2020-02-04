@@ -135,58 +135,56 @@ def fronted(post):
     raw_contents = post.decoded.decode('utf-8')
     return frontmatter.loads(raw_contents)
 
-def syndicate_key_for(silo):
-    """
-    Returns a formatted string used to identify a syndicate ID in post
-    frontmatter.
-    """
-    return f'{silo.lower()}_syndicate_id'
+def silo_key_for(silo):
+    """Returns a formatted string used to identify a silo ID in post frontmatter."""
+    return f'{silo.lower()}_silo_id'
 
-def syndicate_id_for(post, silo):
+def silo_id_for(post, silo):
     """
-    Retrieves the appropriate post ID for `silo` from the frontmatter of the
-    given `post`; returns None if no relevant ID exists.
+    Retrieves the ID appropriate for `silo` from the frontmatter of the given
+    `post`; returns None if no relevant ID exists.
     """
     assert post, "missing post"
     assert silo, "missing silo"
-    return fronted(post).get(syndicate_key_for(silo))
+    return fronted(post).get(silo_key_for(silo))
 
-def mark_syndicated_posts(syndicate_ids_by_path, fronted_posts_by_path):
+def mark_syndicated_posts(silo_ids_by_path, fronted_posts_by_path):
     """
-    Injects the given syndicate IDs for the given posts into their frontmatter
+    Injects the given silo IDs for the given posts into their frontmatter
     and commits the updated posts back to this repo.
 
-    If a syndicate ID already exists in a given post, it is left untouched.
+    If a silo ID already exists in a given post, that's fine: we assume IDs don't
+    change, and so we don't try to change them.
 
     Returns a dictionary which is the response of the commit request.
     """
-    assert syndicate_ids_by_path, "missing syndicate IDs"
+    assert silo_ids_by_path, "missing silo IDs"
     assert fronted_posts_by_path, "missing fronted posts"
 
     updated_fronted_posts_by_path = {}
     silos_included = set()
-    for (path, syndicate_ids_by_silo) in syndicate_ids_by_path.items():
+    for (path, silo_ids_by_silo) in silo_ids_by_path.items():
         fronted_post = fronted_posts_by_path[path]
 
         # Format:
         # {
-        #     'silo_a_syndicate_id': 42,
-        #     'silo_b_syndicate_id': 'abc123',
+        #     'dev_silo_id': 42,
+        #     'medium_silo_id': 'abc123',
         #     ...
         # }
-        new_syndicate_ids = {}
-        for (silo, sid) in syndicate_ids_by_silo.items():
-            # Ignore already posts already marked with this silo
-            if not syndicate_id_for(fronted_post, silo):
-                new_syndicate_ids[syndicate_key_for(silo)] = sid
+        new_silo_ids = {}
+        for (silo, sid) in silo_ids_by_silo.items():
+            # Ignore already posts marked with this silo
+            if not silo_id_for(fronted_post, silo):
+                new_silo_ids[silo_key_for(silo)] = sid
                 silos_included.add(silo)
 
         # Only add to commit if there're any new IDs to add.
-        if not new_syndicate_ids:
+        if not new_silo_ids:
             continue
 
-        # Create new fronted post with old frontmatter merged with syndicate IDs.
-        updated_post = frontmatter.Post(**dict(fronted_post.to_dict(), **new_syndicate_ids))
+        # Create new fronted post with old frontmatter merged with silo IDs.
+        updated_post = frontmatter.Post(**dict(fronted_post.to_dict(), **new_silo_ids))
         updated_fronted_posts_by_path[path] = updated_post
     return commit_updated_posts(updated_fronted_posts_by_path, silos_included)
 

@@ -10,7 +10,7 @@ class MockPost:
         self.raw_contents = textwrap.dedent(
             """
             ---
-            dev_syndicate_id: 42
+            dev_silo_id: 42
             title: A beautiful mock
             tags: beauty, fake
             ---

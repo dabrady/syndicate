@@ -17,16 +17,16 @@ if not posts:
     action_setoutput("time", datetime.now())
     sys.exit()
 
-# Syndicate
+# Do the thing.
 # Result set format:
 # {
 #     '<silo>': {
 #         'added': {
-#             'path/to/new_post': <id>,
+#             'path/to/new_post': <silo id>,
 #             ...
 #         },
 #         'modified': {
-#             'path/to/updated_post': <id>,
+#             'path/to/updated_post': <silo id>,
 #             ...
 #         }
 #     },
@@ -68,14 +68,14 @@ if action_inputs['mark_as_syndicated']:
     #     },
     #     ...
     # }
-    syndicate_ids_by_path = {}
+    silo_ids_by_path = {}
     for (silo, indexed_paths) in indexed_paths_by_silo.items():
-        for (path, id) in indexed_paths.items():
-            syndicate_ids_by_path.setdefault(path, {})
-            syndicate_ids_by_path[path][silo] = id
+        for (path, sid) in indexed_paths.items():
+            silo_ids_by_path.setdefault(path, {})
+            silo_ids_by_path[path][silo] = sid
 
     mark_syndicated_posts(
-        syndicate_ids_by_path,
+        silo_ids_by_path,
         {post.path:fronted(post) for post in posts}
     )
 

@@ -1,4 +1,4 @@
-from syndicate.utils import action_log_group, action_log, action_error, fronted, syndicate_id_for
+from syndicate.utils import action_log_group, action_log, action_error, fronted, silo_id_for
 import requests
 import pprint
 
@@ -21,8 +21,8 @@ def syndicate(posts, api_key):
 
     action_log(f"Hello? Yes, this is {SILO_NAME}.")
     results = {
-        'added': {post.path:_create(post, api_key) for post in posts if not syndicate_id_for(post, SILO_NAME)},
-        'modified': {post.path:_update(post, api_key) for post in posts if syndicate_id_for(post, SILO_NAME)}
+        'added': {post.path:_create(post, api_key) for post in posts if not silo_id_for(post, SILO_NAME)},
+        'modified': {post.path:_update(post, api_key) for post in posts if silo_id_for(post, SILO_NAME)}
     }
     action_log("The results are in:")
     action_log(pprint.pformat(results))
@@ -32,8 +32,8 @@ def syndicate(posts, api_key):
 
 def _create(post, api_key=None):
     """
-    Creates a new article for the given post on DEV.to and returns the results
-    of the POST request as a dictionary.
+    Creates a new article for the given post on DEV.to and returns the silo ID of
+    the newly created article.
 
     This tries to create an **unpublished** draft. However, the 'published'
     status can be overridden in the frontmatter of the post itself for a
@@ -67,7 +67,7 @@ def _create(post, api_key=None):
 def _update(post, api_key=None):
     """
     Updates an article corresponding to the given post on DEV.to and returns the
-    results of the PUT request as a dictionary.
+    silo ID of the updated arcticle.
 
     If a corresponding article does not exist, this will fail.
 
@@ -76,7 +76,7 @@ def _update(post, api_key=None):
     assert api_key, "missing API key"
     assert post, "missing post"
 
-    endpoint = f'https://dev.to/api/articles/{syndicate_id_for(post, SILO_NAME)}'
+    endpoint = f'https://dev.to/api/articles/{silo_id_for(post, SILO_NAME)}'
     headers = {'api-key': api_key}
     payload = {'article': { 'body_markdown': post.decoded.decode('utf-8') } }
     response = requests.put(endpoint, headers=headers, json=payload)
