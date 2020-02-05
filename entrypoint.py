@@ -22,13 +22,13 @@ if not posts:
 # {
 #     '<silo>': {
 #         'added': {
-#             'path/to/new_post': <silo id>,
+#             'path/to/new_post': ( <silo post id>, <silo post URL> ),
 #             ...
 #         },
 #         'modified': {
-#             'path/to/updated_post': <silo id>,
+#             'path/to/updated_post': ( <silo post id>, <silo post URL> ),
 #             ...
-#         }
+#         },
 #     },
 #     ...
 # }
@@ -70,7 +70,7 @@ if action_inputs['mark_as_syndicated']:
     # }
     silo_ids_by_path = {}
     for (silo, indexed_paths) in indexed_paths_by_silo.items():
-        for (path, sid) in indexed_paths.items():
+        for (path, ( sid, _ )) in indexed_paths.items():
             silo_ids_by_path.setdefault(path, {})
             silo_ids_by_path[path][silo] = sid
 

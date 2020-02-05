@@ -32,8 +32,8 @@ def syndicate(posts, api_key):
 
 def _create(post, api_key=None):
     """
-    Creates a new article for the given post on DEV.to and returns the silo ID of
-    the newly created article.
+    Creates a new article for the given post on DEV.to and returns the silo ID
+    and URL of the newly created article.
 
     This tries to create an **unpublished** draft. However, the 'published'
     status can be overridden in the frontmatter of the post itself for a
@@ -62,12 +62,12 @@ def _create(post, api_key=None):
         return None
     else:
         results = response.json()
-        return results['id']
+        return (results['id'], results['url'])
 
 def _update(post, api_key=None):
     """
     Updates an article corresponding to the given post on DEV.to and returns the
-    silo ID of the updated arcticle.
+    silo ID and URL of the updated arcticle.
 
     If a corresponding article does not exist, this will fail.
 
@@ -85,4 +85,4 @@ def _update(post, api_key=None):
         return None
     else:
         results = response.json()
-        return results['id']
+        return (results['id'], results['url'])
