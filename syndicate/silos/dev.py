@@ -50,7 +50,7 @@ def _create(post, api_key=None):
             # NOTE This can be overridden by explicitly setting 'published' in
             # the frontmatter.
             'published': False,
-            'body_markdown': post.decoded.decode('utf-8')
+            'body_markdown': post.decoded_content.decode('utf-8')
         }
     }
     endpoint = "https://dev.to/api/articles"
@@ -78,7 +78,7 @@ def _update(post, api_key=None):
 
     endpoint = f'https://dev.to/api/articles/{silo_id_for(post, SILO_NAME)}'
     headers = {'api-key': api_key}
-    payload = {'article': { 'body_markdown': post.decoded.decode('utf-8') } }
+    payload = {'article': { 'body_markdown': post.decoded_content.decode('utf-8') } }
     response = requests.put(endpoint, headers=headers, json=payload)
     if response.status_code != requests.codes.ok:
         action_error(f"Failed to update post '{post.name}': {response.json()}")

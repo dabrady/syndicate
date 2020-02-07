@@ -1,6 +1,6 @@
 import frontmatter
 import functools
-import github3
+from github import Github, InputGitTreeElement
 import json
 import os
 import requests
@@ -65,15 +65,15 @@ def job_getoutput():
 @functools.lru_cache(maxsize=1)
 def repo():
     """
-    (MEMOIZED) Returns an authenticated reference to a `github3` repository
-    object for the repository this Github action is running in.
-    @see https://github3.readthedocs.io/en/master/api-reference/repos.html#github3.repos.repo.Repository
+    (MEMOIZED) Returns an authenticated reference to a repository object for the
+    repository this Github action is running in.
+    @see https://pygithub.readthedocs.io/en/latest/github_objects/Repository.html#github.Repository.Repository
     """
     assert os.getenv("GITHUB_TOKEN"), "missing GITHUB_TOKEN"
     assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
 
-    gh = github3.login(token=os.getenv("GITHUB_TOKEN"))
-    return gh.repository(*os.getenv("GITHUB_REPOSITORY").split('/'))
+    gh = Github(os.getenv("GITHUB_TOKEN"))
+    return gh.get_repo(os.getenv("GITHUB_REPOSITORY"))
 
 def parent_sha():
     """
@@ -85,27 +85,27 @@ def parent_sha():
 
 def get_trigger_payload():
     """
-    Returns a list of dictionaries describing each of the modified files in the
-    commit that triggered this Github workflow.
-    @see https://github3.readthedocs.io/en/master/api-reference/repos.html#github3.repos.comparison.Comparison.files
+    Returns a list of lightweight File objects describing each of the modified
+    files in the commit that triggered this Github workflow.
+    @see https://pygithub.readthedocs.io/en/latest/github_objects/File.html#github.File.File
     """
     assert os.getenv("GITHUB_SHA"), "missing GITHUB_SHA"
     # NOTE
     # Explicitly using GITHUB_SHA to ensure we always have access to the changed
     # files even if other steps generate commits.
-    return repo().commit(os.getenv("GITHUB_SHA")).files
+    return repo().get_commit(os.getenv("GITHUB_SHA")).files
 
-def file_contents(filename):
+def file_contents(filepath):
     """
-    Returns the `github3` `Contents` object of the matching `filename` in latest
-    known commit to this repo.
-    @see https://github3.readthedocs.io/en/master/api-reference/repos.html#github3.repos.contents.Contents
+    Returns a `ContentFile` object of the matching the given path in latest known
+    commit to this repo.
+    @see https://pygithub.readthedocs.io/en/latest/github_objects/ContentFile.html#github.ContentFile.ContentFile
     @see :func:`~syndicate.utils.parent_sha`
     """
     # NOTE
     # Using the latest known commit to ensure we capture any modifications made
     # to the post frontmatter by previous actions.
-    return repo().file_contents(filename, parent_sha())
+    return repo().get_contents(filepath, ref=parent_sha())
 
 def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
     """
@@ -115,11 +115,11 @@ def get_posts(post_dir=os.getenv('SYNDICATE_POST_DIR', 'posts')):
     files = get_trigger_payload()
     assert files, "target commit was empty"
 
-    posts = [file for file in files if file['filename'].startswith(post_dir)]
+    posts = [file for file in files if file.filename.startswith(post_dir)]
     return [
-        file_contents(post['filename'])
+        file_contents(post.filename)
         for post in posts
-        if post['status'] != 'deleted'  # ignore deleted files
+        if post.status != 'deleted'  # ignore deleted files
     ]
 
 def fronted(post):
@@ -132,7 +132,7 @@ def fronted(post):
     assert post, "missing post"
     if type(post) == frontmatter.Post:
         return post
-    raw_contents = post.decoded.decode('utf-8')
+    raw_contents = post.decoded_content.decode('utf-8')
     return frontmatter.loads(raw_contents)
 
 def silo_key_for(silo):
@@ -214,48 +214,34 @@ def commit_updated_posts(fronted_posts_by_path, silos):
     assert os.getenv("GITHUB_REPOSITORY"), "missing GITHUB_REPOSITORY"
     assert os.getenv("GITHUB_REF"), "missing GITHUB_REF"
 
-    # Create new blobs in the repo's Git database containing the updated contents of our posts.
-    new_blobs_by_path = {
-        path:repo().create_blob(frontmatter.dumps(fronted_post), 'utf-8')
-        for (path, fronted_post) in fronted_posts_by_path.items()
-    }
     parent = parent_sha()
     # Create a new tree with our updated blobs.
-    new_tree = repo().create_tree(
+    new_tree = repo().create_git_tree(
         [
-            {
-                'path': path,
-                'mode': '100644', # 'file', @see https://developer.github.com/v3/git/trees/#tree-object
-                'type': 'blob',
-                'sha':  blob_sha
-            }
-            for (path, blob_sha) in new_blobs_by_path.items()
+            InputGitTreeElement(
+                path,
+                mode='100644', # 'file', @see https://developer.github.com/v3/git/trees/#tree-object
+                type='blob',
+                content=frontmatter.dumps(fronted_post)
+            )
+            for (path, fronted_post) in fronted_posts_by_path.items()
         ],
-        base_tree=parent
+        base_tree=repo().get_git_tree(parent)
     )
 
-    # Update the parent tree with our new subtree.
-    # NOTE The github3 package I'm using apparently doesn't support updating refs -_-
-    # Hand-rolling my own using the Github API directly.
-    # @see https://developer.github.com/v3/
-    new_commit = repo().create_commit(
+    # Commit the new tree.
+    new_commit = repo().create_git_commit(
         f'(syndicate): adding IDs for {silos}',
-        new_tree.sha,
-        [parent]
+        new_tree,
+        [repo().get_git_commit(parent)]
     )
-    response = requests.put(
-        f'https://api.github.com/repos/{os.getenv("GITHUB_REPOSITORY")}/git/{os.getenv("GITHUB_REF")}',
-        headers={
-            'Authorization': f"token {os.getenv('GITHUB_TOKEN')}",
-            'Accept': 'application/vnd.github.v3+json'
-        },
-        json={'sha': new_commit.sha}
-    )
-    if response.status_code == requests.codes.ok:
-        ## NOTE Need to update the reference SHA for future workflow steps.
-        action_setenv('SYNDICATE_SHA', new_commit.sha)
-        action_log("Syndicate posts marked.")
-        return response.json()
-    else:
-        action_error(f"Failed to mark syndicated posts: {response.json()}")
+    # Poosh it.
+    ref_name = os.getenv('GITHUB_REF').lstrip('refs/')
+    try:
+        repo().get_git_ref(ref_name).edit(new_commit.sha)
+    except github.GithubException as err:
+        action_error(f"Failed to mark syndicated posts: {err}")
         return None
+    ## NOTE Need to update the reference SHA for future workflow steps.
+    action_setenv('SYNDICATE_SHA', new_commit.sha)
+    action_log("Syndicate posts marked.")

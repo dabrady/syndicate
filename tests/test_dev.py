@@ -26,7 +26,7 @@ def test_create_returns_something_on_success(requests_mock, monkeypatch):
     requests_mock.post(
         "https://dev.to/api/articles",
         status_code=requests.codes.created,
-        json={ 'type_of': 'article', 'id': 42 })
+        json={ 'type_of': 'article', 'id': 42, 'url': 'https://fake.url/for-this-post' })
     assert dev._create(MockPost(), api_key='fake_api_key')
 
 def test_update_error_when_api_key_missing():
@@ -53,5 +53,5 @@ def test_update_returns_something_on_success(requests_mock, monkeypatch):
     requests_mock.put(
         f"https://dev.to/api/articles/{mock_id}",
         status_code=requests.codes.ok,
-        json={'type_of': 'article', 'id': mock_id})
+        json={'type_of': 'article', 'id': mock_id, 'url': 'https://fake.url/for-this-post'})
     assert dev._update(mock, api_key='fake_api_key')
