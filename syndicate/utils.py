@@ -130,7 +130,7 @@ def fronted(post):
     If `post` is actually already a `frontmatter.Post`, this is a no-op.
     """
     assert post, "missing post"
-    if type(post) == frontmatter.Post:
+    if isinstance(post, frontmatter.Post):
         return post
     raw_contents = post.decoded_content.decode('utf-8')
     return frontmatter.loads(raw_contents)
