@@ -17,7 +17,7 @@ def test_elsewhere_returns_none_when_given_no_silos():
 def test_elsewhere_returns_none_when_no_api_keys_exist_for_given_silos(monkeypatch):
     fake_silo = 'Fake_Silo'
     # Ensure we cannot use the fake silo adapter.
-    monkeypatch.delenv(syndicate._API_KEY(fake_silo), raising=False)
+    monkeypatch.delenv(syndicate._api_key_for(fake_silo), raising=False)
     assert not syndicate.elsewhere(['a post'], [fake_silo])
 
 def test_elsewhere_returns_none_when_no_adapter_exists_for_given_silos(monkeypatch):
@@ -25,7 +25,7 @@ def test_elsewhere_returns_none_when_no_adapter_exists_for_given_silos(monkeypat
     # Ensure we cannot find the fake silo adapter.
     monkeypatch.setattr(importlib.util, 'find_spec', lambda s: None)
     # Ensure we can use the fake silo adapter.
-    monkeypatch.setenv(syndicate._API_KEY(fake_silo), 'fake API key')
+    monkeypatch.setenv(syndicate._api_key_for(fake_silo), 'fake API key')
     assert not syndicate.elsewhere(['a post'], [fake_silo])
 
 def test_elsewhere_returns_syndication_results_for_recognized_silos_when_given_api_keys(monkeypatch):
@@ -41,5 +41,5 @@ def test_elsewhere_returns_syndication_results_for_recognized_silos_when_given_a
     # Ensure we can load the fake silo adapter.
     monkeypatch.setattr(importlib, 'import_module', lambda s: MockSilo)
     # Ensure we can use the fake silo adapter.
-    monkeypatch.setenv(syndicate._API_KEY(fake_silo), 'fake API key')
+    monkeypatch.setenv(syndicate._api_key_for(fake_silo), 'fake API key')
     assert syndicate.elsewhere(['a post'], [fake_silo])

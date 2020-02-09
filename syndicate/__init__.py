@@ -67,7 +67,6 @@ def elsewhere(posts, silos):
         return None
 
 ### privates ###
-_API_KEY = lambda s: f"{s.upper()}_API_KEY"
 
 @functools.lru_cache(maxsize=10)
 def _locate(silo):
@@ -84,4 +83,8 @@ def _syndicate(silo_spec, api_key, posts):
 def _get_api_key(silo):
     """Returns the API key for the given silo, as defined in the environment."""
     assert silo, 'missing silo'
-    return os.getenv(_API_KEY(silo))
+    return os.getenv(_api_key_for(silo))
+
+def _api_key_for(silo):
+    """Returns the name of the environment variable expected to contain an API key for the given silo."""
+    return f"{silo.upper()}_API_KEY"
