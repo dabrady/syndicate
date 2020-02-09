@@ -6,11 +6,11 @@ import requests
 import requests_mock
 
 def test_create_error_when_api_key_missing():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         dev._create(MockPost())
 
 def test_create_error_when_post_missing():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         dev._create(None)
 
 def test_create_returns_nothing_when_request_fails(requests_mock, monkeypatch):
@@ -30,11 +30,11 @@ def test_create_returns_something_on_success(requests_mock, monkeypatch):
     assert dev._create(MockPost(), api_key='fake_api_key')
 
 def test_update_error_when_api_key_missing():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         dev._update(MockPost())
 
 def test_update_error_when_post_missing():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         dev._update(None)
 
 def test_update_returns_nothing_when_request_fails(requests_mock, monkeypatch):

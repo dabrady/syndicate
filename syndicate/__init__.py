@@ -71,18 +71,22 @@ def elsewhere(posts, silos):
 @functools.lru_cache(maxsize=10)
 def _locate(silo):
     """Locates the given silo adapter and returns its Python module name if found."""
-    assert silo, 'missing silo'
+    if not silo:
+        raise ValueError('missing silo')
     return getattr(importlib.util.find_spec(f'syndicate.silos.{silo.lower()}'), 'name', None)
 
 def _syndicate(silo_spec, api_key, posts):
     """Loads and invokes the entrypoint of the given silo adaptor, returning the results."""
-    assert silo_spec, 'missing silo spec'
-    assert api_key, 'missing API key'
+    if not silo_spec:
+        raise ValueError('missing silo spec')
+    if not api_key:
+        raise ValueError('missing API key')
     return importlib.import_module(silo_spec).syndicate(posts, api_key)
 
 def _get_api_key(silo):
     """Returns the API key for the given silo, as defined in the environment."""
-    assert silo, 'missing silo'
+    if not silo:
+        raise ValueError('missing silo')
     return os.getenv(_api_key_for(silo))
 
 def _api_key_for(silo):

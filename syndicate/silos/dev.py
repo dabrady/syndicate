@@ -41,9 +41,12 @@ def _create(post, api_key=None):
 
     @see https://docs.dev.to/api/#operation/createArticle
     """
-    assert api_key, "missing API key"
-    assert post, "missing post"
-    assert fronted(post).get('title'), "article is missing a title"
+    if not api_key:
+        raise ValueError("missing API key")
+    if not post:
+        raise ValueError("missing post")
+    if not fronted(post).get('title'):
+        raise ValueError("article is missing a title")
 
     payload = {
         'article': {
@@ -73,8 +76,10 @@ def _update(post, api_key=None):
 
     @see https://docs.dev.to/api/#operation/updateArticle
     """
-    assert api_key, "missing API key"
-    assert post, "missing post"
+    if not api_key:
+        raise ValueError("missing API key")
+    if not post:
+        raise ValueError("missing post")
 
     endpoint = f'https://dev.to/api/articles/{silo_id_for(post, SILO_NAME)}'
     headers = {'api-key': api_key}
