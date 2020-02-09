@@ -57,7 +57,7 @@ def elsewhere(posts, silos):
     action_log("I'll do what I can.")
     results = {
         silo:_syndicate(spec, api_keys[silo], posts)
-        for (silo, spec) in specs.items()
+        for silo, spec in specs.items()
         if silo in api_keys
     }
     if results:

@@ -52,7 +52,7 @@ if action_inputs['mark_as_syndicated']:
     # Just focus on the added ones.
     indexed_paths_by_silo = {
         silo: results['added']
-        for (silo, results) in syndicated_posts.items()
+        for silo, results in syndicated_posts.items()
         if results and 'added' in results
     }
 
@@ -69,8 +69,8 @@ if action_inputs['mark_as_syndicated']:
     #     ...
     # }
     silo_ids_by_path = {}
-    for (silo, indexed_paths) in indexed_paths_by_silo.items():
-        for (path, ( sid, _ )) in indexed_paths.items():
+    for silo, indexed_paths in indexed_paths_by_silo.items():
+        for path, ( sid, _ ) in indexed_paths.items():
             silo_ids_by_path.setdefault(path, {})
             silo_ids_by_path[path][silo] = sid
 

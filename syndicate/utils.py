@@ -163,7 +163,7 @@ def mark_syndicated_posts(silo_ids_by_path, fronted_posts_by_path):
 
     updated_fronted_posts_by_path = {}
     silos_included = set()
-    for (path, silo_ids_by_silo) in silo_ids_by_path.items():
+    for path, silo_ids_by_silo in silo_ids_by_path.items():
         fronted_post = fronted_posts_by_path[path]
 
         # Format:
@@ -173,7 +173,7 @@ def mark_syndicated_posts(silo_ids_by_path, fronted_posts_by_path):
         #     ...
         # }
         new_silo_ids = {}
-        for (silo, sid) in silo_ids_by_silo.items():
+        for silo, sid in silo_ids_by_silo.items():
             # Ignore already posts marked with this silo
             if not silo_id_for(fronted_post, silo):
                 new_silo_ids[silo_key_for(silo)] = sid
@@ -224,7 +224,7 @@ def commit_updated_posts(fronted_posts_by_path, silos):
                 type='blob',
                 content=frontmatter.dumps(fronted_post)
             )
-            for (path, fronted_post) in fronted_posts_by_path.items()
+            for path, fronted_post in fronted_posts_by_path.items()
         ],
         base_tree=repo().get_git_tree(parent)
     )
