@@ -2,10 +2,8 @@ FROM python:3-alpine
 
 WORKDIR /action
 
-# Copy action metadata
-COPY LICENSE README.md requirements.txt ./
 # Copy action code
-COPY entrypoint.py ./
+COPY requirements.txt entrypoint.py ./
 COPY syndicate/ ./syndicate/
 
 # Install action requirements
