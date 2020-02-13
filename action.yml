@@ -1,5 +1,5 @@
-name: 'syndicate'
-description: 'Publish your content elsewhere (P.O.S.S.E)'
+name: 'syndicate-elsewhere'
+description: 'Publish your content somewhere else (P.O.S.S.E)'
 branding:
   icon: rss
   color: red
