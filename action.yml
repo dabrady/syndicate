@@ -1,0 +1,25 @@
+name: 'syndicate'
+description: 'Publish your content elsewhere (P.O.S.S.E)'
+branding:
+  icon: rss
+  color: red
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+
+inputs:
+  silos:
+    description: 'A list of platforms to update with your new/changed content'
+    required: false
+    default: ''
+  mark_as_syndicated:
+    description: 'Commit silo IDs to the frontmatter of newly syndicated posts for synchronization purposes'
+    required: false
+    default: false
+
+outputs:
+  time:
+    description: 'The time this action finished'
+  syndicated_posts:
+    description: 'A JSON object mapping silos to the posts that were added or modified on those platforms'
