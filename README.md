@@ -1,6 +1,6 @@
 # syndicate
 
-A simple implementation of the [P.O.S.S.E.](https://indieweb.org/POSSE) content publishing model, packaged as a Github Action.
+A simple implementation of the [POSSE](https://indieweb.org/POSSE) content publishing model, packaged as a Github Action.
 
 Write your content, store it on Github, and use this action in a workflow to draft it to silo platforms like [DEV.to](https://dev.to). The action will keep the silos up to date with your latest changes here on Github.
 
