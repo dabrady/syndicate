@@ -9,6 +9,8 @@ Wherever possible, when content is syndicated to a silo for the first time, it i
 The silos currently supported are:
 - https://dev.to
 
+**A key assumption** made by this project is that your content is written as Markdown, and includes a YAML frontmatter containing at least a `title` property. If this is not the case for you, this action sadly does not currently support your worflow. If you would like to see support for some other way of making content, please open an issue to start the discussion.
+
 ## Example usage
 
 See [the example workflow](https://github.com/dabrady/syndicate/blob/develop/.github/workflows/example.yml) for a fully annotated example, but here's the quick version:
