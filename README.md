@@ -1,6 +1,6 @@
 # syndicate
 
-A simple implementation of the [P.O.S.S.E.](https://indieweb.org/POSSE) content publishing model, packaged as a Github Action.
+A simple implementation of the [POSSE](https://indieweb.org/POSSE) content publishing model, packaged as a Github Action.
 
 Write your content, store it on Github, and use this action in a workflow to draft it to silo platforms like [DEV.to](https://dev.to). The action will keep the silos up to date with your latest changes here on Github.
 
@@ -8,6 +8,8 @@ Wherever possible, when content is syndicated to a silo for the first time, it i
 
 The silos currently supported are:
 - https://dev.to
+
+**A key assumption** made by this project is that your content is written as Markdown, and includes a YAML frontmatter containing at least a `title` property. If this is not the case for you, this action sadly does not currently support your worflow. If you would like to see support for some other way of making content, please open an issue to start the discussion.
 
 ## Example usage
 
